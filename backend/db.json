@@ -4,7 +4,22 @@
       "id": "1762614865922",
       "username": "Febri sandi",
       "email": "febri@gmail.com",
-      "password": "$2b$10$8ijP4zx1dPuPdGwLsRiJMeg8no4/ZHs5uQbqYjUA98Y//s5tkUN8G"
+      "password": "$2b$10$8ijP4zx1dPuPdGwLsRiJMeg8no4/ZHs5uQbqYjUA98Y//s5tkUN8G",
+      "role": "user"
+    },
+    {
+      "id": "1762619071431",
+      "username": "febrisandi",
+      "email": "pembeli@example.com",
+      "password": "$2b$10$acjz2ToC/d4vVImMYJexZ.at1BshXr9yl6BLP7Yo2N8W.cK54SESe",
+      "role": "user"
+    },
+    {
+      "id": "1",
+      "username": "Admin User",
+      "email": "admin@example.com",
+      "password": "$2b$10$YAEsGZgvkJ28rcWf4KfyuO9Kvf/.OpAnYWFIOWaUYXhE8pY695L2m",
+      "role": "admin"
     }
   ]
 }

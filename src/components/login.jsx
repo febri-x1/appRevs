@@ -1,59 +1,51 @@
 import React, { useState } from 'react';
-import { Link, userNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // FIX: useNavigate bukan userNavigate
 import { jwtDecode } from 'jwt-decode';
-import '../style/form.css'; // Impor file CSS
+import '../style/form.css';
 
 function Login() {
-  // State untuk menyimpan data input form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = userNavigate();
+  const navigate = useNavigate(); // FIX: Deklarasi navigate
 
-  // Fungsi yang dipanggil saat form disubmit
-  // Di dalam src/components/login.jsx
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-const handleSubmit = async (event) => {
-  event.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3001/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-  try {
-    const response = await fetch('http://localhost:3001/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
+      const data = await response.json();
 
-    const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Gagal login');
+      }
 
-    if (!response.ok) {
-      throw new Error(data.message || 'Gagal login');
+      alert('Login berhasil!');
+      localStorage.setItem('authToken', data.token);
+
+      // Decode token dan redirect berdasarkan role
+      const decodedToken = jwtDecode(data.token);
+      const userRole = decodedToken.role;
+
+      if (userRole === 'admin') {
+        navigate('/admin');
+      } else if (userRole === 'user') {
+        navigate('/dashboard');
+      } else {
+        navigate('/login');
+      }
+
+    } catch (error) {
+      console.error('Error Login:', error);
+      alert(error.message);
     }
-
-    alert('Login berhasil!');
-    localStorage.setItem('authToken', data.token);
-
-    // --- INI BAGIAN PENTING YANG HILANG ---
-    // Anda perlu menggunakan 'jwtDecode' di sini
-    // ------------------------------------------
-    const decodedToken = jwtDecode(data.token);
-    const userRole = decodedToken.role;
-
-    if (userRole === 'admin') {
-      navigate('/admin');
-    } else if (userRole === 'user') {
-      navigate('/dashboard');
-    } else {
-      // Fallback jika role tidak dikenali
-      navigate('/login');
-    }
-    // ------------------------------------------
-
-  } catch (error) {
-    console.error('Error Login:', error);
-    alert(error.message);
-  }
-};
+  };
 
   return (
     <div className="form-container">

@@ -1,10 +1,14 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/login'; // pastikan path benar
-import Signup from './components/signup'; // pastikan path benar
-import UserDashboard from './components/UserDashboard'; // <-- IMPORT BARU
-import AdminDashboard from './components/AdminDashboard'; // <-- IMPORT BARU
-import ProtectedRoute from './components/ProtectedRoute'; // <-- IMPORT BARU
+
+// -- INI ADALAH PERBAIKANNYA --
+import Login from './components/login';
+import Signup from './components/signup';
+// ------------------------------
+
+import UserDashboard from './components/UserDashboard';
+import AdminDashboard from './components/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -17,7 +21,6 @@ function App() {
 
         {/* Rute Dilindungi untuk User */}
         <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
-          {/* Admin juga boleh lihat dashboard user */}
           <Route path="/dashboard" element={<UserDashboard />} /> 
         </Route>
 
