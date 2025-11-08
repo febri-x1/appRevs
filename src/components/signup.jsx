@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/Form.css'; // Menggunakan CSS yang sama
+import '../style/form.css'; // Menggunakan CSS yang sama
 
 function Signup() {
   const [username, setUsername] = useState('');

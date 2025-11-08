@@ -1,31 +1,30 @@
-/* Mengatur container form agar di tengah */
-.form-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 90vh;
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-}
+/*
+ * GANTI SEMUA ISI file form.css Anda dengan ini
+ * untuk tampilan dark mode yang lebih modern.
+ */
 
-/* Memberi style pada tag <form> */
+/* * Kita tidak lagi menggunakan .form-container 
+ * karena layout diurus oleh body di index.css 
+ */
+
 form {
-  background: #ffffff;
-  border: 1px solid #ddd;
+  background: #2d2d2d; /* Abu-abu gelap, bukan putih */
+  border: 1px solid #444; /* Border yang lebih lembut */
   border-radius: 8px;
   padding: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   width: 100%;
   max-width: 400px;
+  box-sizing: border-box; /* Pastikan padding tidak merusak lebar */
 }
 
 form h2 {
   text-align: center;
-  color: #333;
+  color: #f0f0f0; /* Teks terang */
+  margin-top: 0;
   margin-bottom: 1.5rem;
 }
 
-/* Mengatur grup label dan input */
 .form-group {
   margin-bottom: 1rem;
 }
@@ -33,19 +32,26 @@ form h2 {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #555;
+  color: #ccc; /* Teks label terang */
   font-weight: bold;
 }
 
 .form-group input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid #555; /* Border input lebih gelap */
   border-radius: 4px;
-  box-sizing: border-box; /* Agar padding tidak merusak layout */
+  box-sizing: border-box;
+  background-color: #1e1e1e; /* Background input sangat gelap */
+  color: #ffffff; /* Teks input putih */
 }
 
-/* Tombol submit */
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff; /* Tetap gunakan highlight biru saat aktif */
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.5);
+}
+
 .form-button {
   width: 100%;
   padding: 0.75rem;
@@ -63,11 +69,10 @@ form h2 {
   background-color: #0056b3;
 }
 
-/* Link untuk pindah halaman (Login/Signup) */
 .form-switch {
   text-align: center;
   margin-top: 1rem;
-  color: #555;
+  color: #aaa; /* Teks switch lebih terang */
 }
 
 .form-switch a {

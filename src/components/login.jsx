@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../style/from.css'; // Impor file CSS
+import '../style/form.css'; // Impor file CSS
 
 function Login() {
   // State untuk menyimpan data input form
