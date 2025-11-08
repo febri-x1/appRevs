@@ -1,24 +1,57 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, userNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import '../style/form.css'; // Impor file CSS
 
 function Login() {
   // State untuk menyimpan data input form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = userNavigate();
 
   // Fungsi yang dipanggil saat form disubmit
-  const handleSubmit = (event) => {
-    event.preventDefault(); // Mencegah reload halaman
-    console.log('Data Login:', { email, password });
-    
-    // --- DI SINI LOGIKA ANDA ---
-    // (Contoh: Kirim data ke API backend Anda)
-    // fetch('/api/login', { method: 'POST', body: JSON.stringify({ email, password }) })
-    //   .then(response => response.json())
-    //   .then(data => console.log(data));
-    
-    alert('Login berhasil (lihat konsol)!');
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      const response = await fetch('http://localhost:3001/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Gagal login');
+      }
+
+      // Jika berhasil, 'data.token' berisi JWT
+      console.log('Login berhasil, token:', data.token);
+      alert('Login berhasil!');
+
+      // Simpan token untuk sesi (Contoh: localStorage)
+      localStorage.setItem('authToken', data.token);
+
+      const decodedToken = jwtDecode(data.token);
+      const userRole = decodedToken.role;
+
+      if (userRole === 'admin') {
+        navigate('/admin');
+      } else if (userRole === 'user') {
+        navigate('/dashboard');
+      } else {
+        // Fallback jika role tidak dikenali
+        navigate('/login');
+      }
+      // ------------------------------------------
+
+    } catch (error) {
+      console.error('Error Login:', error);
+      alert(error.message);
+    }
   };
 
   return (

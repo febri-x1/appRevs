@@ -7,15 +7,32 @@ function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log('Data Signup:', { username, email, password });
 
-    // --- DI SINI LOGIKA ANDA ---
-    // (Contoh: Kirim data ke API backend Anda untuk registrasi)
-    // fetch('/api/signup', { ... })
-    
-    alert('Signup berhasil (lihat konsol)!');
+    try {
+      const response = await fetch('http://localhost:3001/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Gagal mendaftar');
+      }
+
+      alert('Signup berhasil! Silakan login.');
+      // Arahkan ke login (jika Anda mengimpor `useNavigate` dari `react-router-dom`)
+      // navigate('/login');
+
+    } catch (error) {
+      console.error('Error Signup:', error);
+      alert(error.message);
+    }
   };
 
   return (

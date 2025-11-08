@@ -2,7 +2,14 @@
  * GANTI SEMUA ISI file form.css Anda dengan ini
  * untuk tampilan dark mode yang lebih modern.
  */
-
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Mengisi seluruh layar */
+  font-family: Arial, sans-serif;
+  background-color: #242424; /* Background gelap */
+}
 /* * Kita tidak lagi menggunakan .form-container 
  * karena layout diurus oleh body di index.css 
  */
