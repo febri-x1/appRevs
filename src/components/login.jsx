@@ -10,49 +10,50 @@ function Login() {
   const navigate = userNavigate();
 
   // Fungsi yang dipanggil saat form disubmit
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  // Di dalam src/components/login.jsx
 
-    try {
-      const response = await fetch('http://localhost:3001/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+const handleSubmit = async (event) => {
+  event.preventDefault();
 
-      const data = await response.json();
+  try {
+    const response = await fetch('http://localhost:3001/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Gagal login');
-      }
+    const data = await response.json();
 
-      // Jika berhasil, 'data.token' berisi JWT
-      console.log('Login berhasil, token:', data.token);
-      alert('Login berhasil!');
-
-      // Simpan token untuk sesi (Contoh: localStorage)
-      localStorage.setItem('authToken', data.token);
-
-      const decodedToken = jwtDecode(data.token);
-      const userRole = decodedToken.role;
-
-      if (userRole === 'admin') {
-        navigate('/admin');
-      } else if (userRole === 'user') {
-        navigate('/dashboard');
-      } else {
-        // Fallback jika role tidak dikenali
-        navigate('/login');
-      }
-      // ------------------------------------------
-
-    } catch (error) {
-      console.error('Error Login:', error);
-      alert(error.message);
+    if (!response.ok) {
+      throw new Error(data.message || 'Gagal login');
     }
-  };
+
+    alert('Login berhasil!');
+    localStorage.setItem('authToken', data.token);
+
+    // --- INI BAGIAN PENTING YANG HILANG ---
+    // Anda perlu menggunakan 'jwtDecode' di sini
+    // ------------------------------------------
+    const decodedToken = jwtDecode(data.token);
+    const userRole = decodedToken.role;
+
+    if (userRole === 'admin') {
+      navigate('/admin');
+    } else if (userRole === 'user') {
+      navigate('/dashboard');
+    } else {
+      // Fallback jika role tidak dikenali
+      navigate('/login');
+    }
+    // ------------------------------------------
+
+  } catch (error) {
+    console.error('Error Login:', error);
+    alert(error.message);
+  }
+};
 
   return (
     <div className="form-container">
