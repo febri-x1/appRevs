@@ -237,11 +237,13 @@ function UserDashboard() {
   };
 
   // Status badge
+// Status badge
   const getStatusBadge = (status) => {
     const statusConfig = {
-      pending: { text: 'Menunggu', color: '#ffc107', icon: '⏳' },
-      confirmed: { text: 'Dikonfirmasi', color: '#28a745', icon: '✅' },
-      completed: { text: 'Selesai', color: '#007bff', icon: '🏁' },
+      pending: { text: 'Menunggu Konfirmasi', color: '#ffc107', icon: '⏳' },
+      confirmed: { text: 'Menunggu Servis', color: '#28a745', icon: '✅' },
+      in_progress: { text: 'Sedang Dikerjakan', color: '#17a2b8', icon: '🔧' },
+      completed: { text: 'Selesai Dikerjakan', color: '#007bff', icon: '🏁' },
       cancelled: { text: 'Dibatalkan', color: '#dc3545', icon: '❌' }
     };
 
@@ -260,7 +262,6 @@ function UserDashboard() {
       </span>
     );
   };
-
   return (
     <div className="dashboard-container">
       {/* Header */}

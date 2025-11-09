@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import '../style/booking.css'; // Kita gunakan style yang sama
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -18,94 +19,206 @@ function AdminDashboard() {
     }
   }
 
+  const [bookings, setBookings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fungsi untuk mengambil semua booking
+  const fetchAllBookings = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:3001/api/bookings', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Gagal mengambil data booking');
+      }
+      const data = await response.json();
+      // Urutkan: pending & confirmed di atas
+      data.bookings.sort((a, b) => {
+        const order = { pending: 1, confirmed: 2, in_progress: 3, completed: 4, cancelled: 5 };
+        return (order[a.status] || 99) - (order[b.status] || 99);
+      });
+      setBookings(data.bookings);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      alert('❌ Gagal memuat data booking');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Panggil fetchBookings saat komponen dimuat
+  useEffect(() => {
+    fetchAllBookings();
+  }, []);
+
+  // Fungsi untuk update status
+  const handleStatusChange = async (bookingId, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) {
+        throw new Error('Gagal update status');
+      }
+
+      // Update status di state secara lokal (lebih cepat)
+      setBookings(prevBookings => 
+        prevBookings.map(b => 
+          b.id === bookingId ? { ...b, status: newStatus } : b
+        )
+      );
+      // fetchAllBookings(); // Atau fetch ulang
+      
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('❌ Gagal update status');
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     navigate('/login');
   };
 
+  // Format tanggal Indonesia
+  const formatDate = (dateString) => {
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return new Date(dateString).toLocaleDateString('id-ID', options);
+  };
+
+  // Status badge
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      pending: { text: 'Menunggu Konfirmasi', color: '#ffc107', icon: '⏳' },
+      confirmed: { text: 'Menunggu Servis', color: '#28a745', icon: '✅' },
+      in_progress: { text: 'Sedang Dikerjakan', color: '#17a2b8', icon: '🔧' },
+      completed: { text: 'Selesai Dikerjakan', color: '#007bff', icon: '🏁' },
+      cancelled: { text: 'Dibatalkan', color: '#dc3545', icon: '❌' }
+    };
+
+    const config = statusConfig[status] || statusConfig.pending;
+
+    return (
+      <span style={{
+        background: config.color,
+        color: 'white',
+        padding: '0.25rem 0.75rem',
+        borderRadius: '12px',
+        fontSize: '0.85rem',
+        fontWeight: 'bold'
+      }}>
+        {config.icon} {config.text}
+      </span>
+    );
+  };
+
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>🛡️ Dashboard Admin</h1>
-        <p style={styles.welcome}>Selamat datang, <strong>{username}</strong>!</p>
-        <p style={styles.text}>Ini adalah halaman dashboard khusus untuk admin.</p>
-        
-        <div style={styles.infoBox}>
-          <h3 style={styles.infoTitle}>Akses Admin:</h3>
-          <ul style={styles.list}>
-            <li>✅ Kelola semua user</li>
-            <li>✅ Lihat statistik lengkap</li>
-            <li>✅ Akses penuh ke sistem</li>
-          </ul>
+    <div className="dashboard-container">
+      {/* Header */}
+      <header className="dashboard-header">
+        <div className="header-content">
+          <h1>🛡️ Dashboard Admin</h1>
+          <div className="user-info">
+            <span>Halo, <strong>{username}</strong></span>
+            <button onClick={handleLogout} className="btn-logout">
+              Logout
+            </button>
+          </div>
         </div>
-        
-        <button onClick={handleLogout} style={styles.button}>
-          Logout
-        </button>
-      </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="dashboard-main" style={{ gridTemplateColumns: '1fr' }}>
+        <div className="history-container">
+          <div className="history-header">
+            <h2>📋 Manajemen Booking</h2>
+            <button onClick={fetchAllBookings} className="btn-refresh" disabled={isLoading}>
+              {isLoading ? '⏳ Memuat...' : '🔄 Refresh'}
+            </button>
+          </div>
+
+          {isLoading ? (
+            <div className="loading">⏳ Memuat data...</div>
+          ) : bookings.length === 0 ? (
+            <div className="empty-state">
+              <p>📭 Belum ada data booking</p>
+            </div>
+          ) : (
+            <div className="bookings-list">
+              {bookings.map((booking) => (
+                <div key={booking.id} className="booking-item">
+                  <div className="booking-header-item">
+                    <div>
+                      <h3>{booking.typeKendaraan}</h3>
+                      <span className="vehicle-type">
+                        {booking.jenisKendaraan.toUpperCase()}
+                      </span>
+                    </div>
+                    {/* Tampilkan badge status saat ini */}
+                    {getStatusBadge(booking.status)}
+                  </div>
+
+                  <div className="booking-details">
+                    <div className="detail-item">
+                      <span className="label">📅 Tanggal:</span>
+                      <span className="value">{formatDate(booking.tanggal)}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="label">⏰ Waktu:</span>
+                      <span className="value">{booking.waktu}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="label">👤 Nama:</span>
+                      <span className="value">{booking.nama}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="label">📱 Telepon:</span>
+                      <span className="value">{booking.nomorTelepon}</span>
+                    </div>
+                    {booking.catatan && (
+                      <div className="detail-item full">
+                        <span className="label">📝 Catatan:</span>
+                        <span className="value">{booking.catatan}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Ini adalah inti fiturnya */}
+                  <div className="admin-actions">
+                    <label htmlFor={`status-${booking.id}`}>
+                      Ubah Status Pengerjaan:
+                    </label>
+                    <select
+                      id={`status-${booking.id}`}
+                      className="status-select"
+                      value={booking.status}
+                      onChange={(e) => handleStatusChange(booking.id, e.target.value)}
+                    >
+                      <option value="pending">Menunggu Konfirmasi</option>
+                      <option value="confirmed">Menunggu Servis</option>
+                      <option value="in_progress">Sedang Dikerjakan</option>
+                      <option value="completed">Selesai Dikerjakan</option>
+                      <option value="cancelled">Dibatalkan</option>
+                    </select>
+                  </div>
+
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    backgroundColor: '#242424',
-    fontFamily: 'Arial, sans-serif',
-  },
-  card: {
-    background: '#2d2d2d',
-    border: '1px solid #444',
-    borderRadius: '8px',
-    padding: '2rem',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
-    maxWidth: '500px',
-    textAlign: 'center',
-  },
-  title: {
-    color: '#f0f0f0',
-    marginTop: 0,
-  },
-  welcome: {
-    color: '#ccc',
-    fontSize: '1.1rem',
-    marginBottom: '1rem',
-  },
-  text: {
-    color: '#aaa',
-    marginBottom: '1.5rem',
-  },
-  infoBox: {
-    background: '#1e1e1e',
-    border: '1px solid #555',
-    borderRadius: '6px',
-    padding: '1rem',
-    marginBottom: '1.5rem',
-  },
-  infoTitle: {
-    color: '#007bff',
-    marginTop: 0,
-    fontSize: '1rem',
-  },
-  list: {
-    color: '#aaa',
-    textAlign: 'left',
-    paddingLeft: '1.5rem',
-  },
-  button: {
-    padding: '0.75rem 1.5rem',
-    border: 'none',
-    borderRadius: '4px',
-    backgroundColor: '#dc3545',
-    color: 'white',
-    fontSize: '1rem',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-  },
-};
 
 export default AdminDashboard;
