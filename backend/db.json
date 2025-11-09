@@ -15,5 +15,21 @@
       "role": "admin"
     }
   ],
-  "bookings": []
+  "bookings": [
+    {
+      "id": "1762665962939",
+      "userId": "1762622161600",
+      "nama": "user001",
+      "nomorTelepon": "081295883248",
+      "email": "user@example.com",
+      "jenisKendaraan": "matic",
+      "typeKendaraan": "honda scoopy",
+      "tanggal": "2025-11-11",
+      "waktu": "11:00",
+      "catatan": "ganti oli",
+      "status": "pending",
+      "createdAt": "2025-11-09T05:26:02.939Z",
+      "updatedAt": "2025-11-09T06:35:45.893Z"
+    }
+  ]
 }

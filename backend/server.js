@@ -5,14 +5,14 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 const app = express();
-const PORT = 3001; // Kita gunakan port 3001 (React di 5173)
-const JWT_SECRET = 'rahasia-super-aman-kamu'; // Ganti ini dengan kunci rahasia Anda
+const PORT = 3001;
+const JWT_SECRET = 'rahasia-super-aman-kamu';
 
 // --- Middleware ---
-app.use(cors()); // Mengizinkan koneksi dari frontend React
-app.use(express.json()); // Membaca body request sebagai JSON
+app.use(cors()); // PENTING: Aktifkan CORS
+app.use(express.json());
 
-// --- Database (Helper Functions) ---
+// --- Database Helper Functions ---
 const DB_FILE = './db.json';
 
 const readDB = () => {
@@ -20,8 +20,7 @@ const readDB = () => {
     const data = fs.readFileSync(DB_FILE);
     return JSON.parse(data);
   } catch (error) {
-    // Jika file tidak ada, buat struktur awal
-    return { users: [] };
+    return { users: [], bookings: [] };
   }
 };
 
@@ -29,11 +28,29 @@ const writeDB = (data) => {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 };
 
-// --- Rute API (Endpoints) ---
+// --- Middleware Verifikasi Token ---
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Token tidak ditemukan' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error('Token verification error:', error);
+    return res.status(403).json({ message: 'Token tidak valid' });
+  }
+};
+
+// --- RUTE API ---
 
 /**
- * Endpoint: Sign Up (Registrasi)
- * Mencocokkan: src/components/signup.jsx
+ * Sign Up
  */
 app.post('/api/signup', async (req, res) => {
   const { username, email, password } = req.body;
@@ -44,17 +61,15 @@ app.post('/api/signup', async (req, res) => {
 
   const db = readDB();
 
-  // Cek jika email sudah terdaftar
   const userExists = db.users.find((user) => user.email === email);
   if (userExists) {
     return res.status(400).json({ message: 'Email sudah terdaftar' });
   }
 
-  // Hash password sebelum disimpan
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const newUser = {
-    id: Date.now().toString(), // ID unik sederhana
+    id: Date.now().toString(),
     username,
     email,
     password: hashedPassword,
@@ -64,13 +79,12 @@ app.post('/api/signup', async (req, res) => {
   db.users.push(newUser);
   writeDB(db);
 
-  console.log('User baru terdaftar:', newUser.email);
+  console.log('✅ User baru terdaftar:', newUser.email);
   res.status(201).json({ message: 'Registrasi berhasil!' });
 });
 
 /**
- * Endpoint: Login
- * Mencocokkan: src/components/login.jsx
+ * Login
  */
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
@@ -82,58 +96,47 @@ app.post('/api/login', async (req, res) => {
   const db = readDB();
   const user = db.users.find((user) => user.email === email);
 
-  // Jika user tidak ditemukan ATAU password salah
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ message: 'Email atau password salah' });
   }
 
-  // Jika berhasil, buat JSON Web Token (JWT)
   const token = jwt.sign(
-    {    
-         id: user.id,
-         email: user.email, 
-         username: user.username,
-         role: user.role,
-     },
+    {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+    },
     JWT_SECRET,
-    { expiresIn: '1h' } // Token berlaku 1 jam
+    { expiresIn: '24h' }
   );
 
-  console.log('User login berhasil:', user.email, 'Role', user.role);
+  console.log('✅ User login berhasil:', user.email, 'Role:', user.role);
   res.status(200).json({ message: 'Login berhasil!', token });
 });
 
-// Tambahkan ini di backend/server.js setelah endpoint login
-
 /**
- * Middleware untuk verifikasi JWT
- */
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-  if (!token) {
-    return res.status(401).json({ message: 'Token tidak ditemukan' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // Simpan data user ke request
-    next();
-  } catch (error) {
-    return res.status(403).json({ message: 'Token tidak valid' });
-  }
-};
-
-/**
- * Endpoint: Buat Booking Baru
+ * Buat Booking Baru
  */
 app.post('/api/bookings', verifyToken, async (req, res) => {
+  console.log('📥 Booking request received:', req.body);
+  
   const { nama, nomorTelepon, email, jenisKendaraan, typeKendaraan, tanggal, waktu, catatan } = req.body;
 
   // Validasi input
   if (!nama || !nomorTelepon || !email || !jenisKendaraan || !typeKendaraan || !tanggal || !waktu) {
-    return res.status(400).json({ message: 'Semua field wajib diisi kecuali catatan' });
+    return res.status(400).json({ 
+      message: 'Semua field wajib diisi kecuali catatan',
+      missingFields: {
+        nama: !nama,
+        nomorTelepon: !nomorTelepon,
+        email: !email,
+        jenisKendaraan: !jenisKendaraan,
+        typeKendaraan: !typeKendaraan,
+        tanggal: !tanggal,
+        waktu: !waktu
+      }
+    });
   }
 
   const db = readDB();
@@ -145,7 +148,7 @@ app.post('/api/bookings', verifyToken, async (req, res) => {
 
   const newBooking = {
     id: Date.now().toString(),
-    userId: req.user.id, // Dari token JWT
+    userId: req.user.id,
     nama,
     nomorTelepon,
     email,
@@ -154,7 +157,7 @@ app.post('/api/bookings', verifyToken, async (req, res) => {
     tanggal,
     waktu,
     catatan: catatan || '',
-    status: 'pending', // pending, confirmed, completed, cancelled
+    status: 'pending',
     createdAt: new Date().toISOString()
   };
 
@@ -169,7 +172,7 @@ app.post('/api/bookings', verifyToken, async (req, res) => {
 });
 
 /**
- * Endpoint: Get Semua Bookings User
+ * Get Bookings User
  */
 app.get('/api/bookings/my-bookings', verifyToken, (req, res) => {
   const db = readDB();
@@ -178,45 +181,30 @@ app.get('/api/bookings/my-bookings', verifyToken, (req, res) => {
     return res.json({ bookings: [] });
   }
 
-  // Filter booking berdasarkan userId
   const userBookings = db.bookings.filter(b => b.userId === req.user.id);
   
   res.json({ bookings: userBookings });
 });
 
 /**
- * Endpoint: Get Semua Bookings (ADMIN ONLY)
+ * Get Semua Bookings (ADMIN)
  */
 app.get('/api/bookings', verifyToken, (req, res) => {
-  // Cek apakah user adalah admin
   if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Akses ditolak. Hanya admin yang bisa melihat semua booking.' });
+    return res.status(403).json({ message: 'Akses ditolak' });
   }
 
   const db = readDB();
   
-  if (!db.bookings) {
-    return res.json({ bookings: [] });
-  }
-
-  res.json({ bookings: db.bookings });
+  res.json({ bookings: db.bookings || [] });
 });
 
 /**
- * Endpoint: Update Status Booking (ADMIN ONLY)
+ * Update Status Booking (ADMIN)
  */
 app.patch('/api/bookings/:id', verifyToken, (req, res) => {
-  // Cek apakah user adalah admin
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Akses ditolak. Hanya admin yang bisa update booking.' });
-  }
-
   const { id } = req.params;
-  const { status } = req.body;
-
-  if (!status) {
-    return res.status(400).json({ message: 'Status harus diisi' });
-  }
+  const { status, tanggal, waktu, catatan } = req.body;
 
   const db = readDB();
 
@@ -230,15 +218,80 @@ app.patch('/api/bookings/:id', verifyToken, (req, res) => {
     return res.status(404).json({ message: 'Booking tidak ditemukan' });
   }
 
-  db.bookings[bookingIndex].status = status;
-  db.bookings[bookingIndex].updatedAt = new Date().toISOString();
+  const booking = db.bookings[bookingIndex];
+
+  // Cek kepemilikan untuk user biasa
+  if (req.user.role !== 'admin' && booking.userId !== req.user.id) {
+    return res.status(403).json({ message: 'Akses ditolak' });
+  }
+
+  // User hanya bisa edit jika status masih pending
+  if (req.user.role !== 'admin' && booking.status !== 'pending') {
+    return res.status(403).json({ 
+      message: 'Tidak dapat mengubah booking yang sudah dikonfirmasi' 
+    });
+  }
+
+  // Update fields
+  if (status) booking.status = status;
+  if (tanggal) booking.tanggal = tanggal;
+  if (waktu) booking.waktu = waktu;
+  if (catatan !== undefined) booking.catatan = catatan;
   
+  booking.updatedAt = new Date().toISOString();
+  
+  db.bookings[bookingIndex] = booking;
   writeDB(db);
 
-  console.log(`✅ Status booking ${id} diupdate menjadi: ${status}`);
+  console.log(`✅ Booking ${id} diupdate`);
   res.json({ 
-    message: 'Status booking berhasil diupdate',
-    booking: db.bookings[bookingIndex]
+    message: 'Booking berhasil diupdate',
+    booking: booking
+  });
+});
+
+/**
+ * Cancel Booking (USER)
+ */
+app.patch('/api/bookings/:id/cancel', verifyToken, (req, res) => {
+  const { id } = req.params;
+
+  const db = readDB();
+
+  if (!db.bookings) {
+    return res.status(404).json({ message: 'Booking tidak ditemukan' });
+  }
+
+  const bookingIndex = db.bookings.findIndex(b => b.id === id);
+
+  if (bookingIndex === -1) {
+    return res.status(404).json({ message: 'Booking tidak ditemukan' });
+  }
+
+  const booking = db.bookings[bookingIndex];
+
+  // Cek kepemilikan
+  if (booking.userId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Akses ditolak' });
+  }
+
+  // Hanya bisa cancel jika status pending
+  if (booking.status !== 'pending') {
+    return res.status(400).json({ 
+      message: 'Hanya booking dengan status pending yang bisa dibatalkan' 
+    });
+  }
+
+  booking.status = 'cancelled';
+  booking.updatedAt = new Date().toISOString();
+  
+  db.bookings[bookingIndex] = booking;
+  writeDB(db);
+
+  console.log(`✅ Booking ${id} dibatalkan`);
+  res.json({ 
+    message: 'Booking berhasil dibatalkan',
+    booking: booking
   });
 });
 
