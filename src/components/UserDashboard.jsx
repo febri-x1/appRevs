@@ -31,6 +31,7 @@ function UserDashboard() {
     email: userEmail,
     jenisKendaraan: '',
     typeKendaraan: '',
+    noPolisi: '',
     tanggal: '',
     waktu: '',
     catatan: ''
@@ -120,6 +121,7 @@ function UserDashboard() {
         email: userEmail,
         jenisKendaraan: '',
         typeKendaraan: '',
+        noPolisi: '',
         tanggal: '',
         waktu: '',
         catatan: ''
@@ -395,6 +397,21 @@ function UserDashboard() {
                   </div>
                 </div>
 
+                <div className="form-group">
+                    <label htmlFor="noPolisi">
+                      <span className="required">*</span> Nomor Plat
+                    </label>
+                    <input
+                      type="text"
+                      id="noPolisi"
+                      name="noPolisi"
+                      value={formData.noPolisi}
+                      onChange={handleChange}
+                      placeholder="Contoh: A****XY"
+                      required
+                    />
+                  </div>
+
                 {/* Tanggal & Waktu */}
                 <div className="form-row">
                   <div className="form-group">
@@ -587,6 +604,10 @@ function UserDashboard() {
                           <div className="detail-item">
                             <span className="label">👤 Nama:</span>
                             <span className="value">{booking.nama}</span>
+                          </div>
+                          <div className="detail-item">
+                            <span className="label">Nomor Polisi:</span>
+                            <span className="value">{booking.noPolisi}</span>
                           </div>
                           <div className="detail-item">
                             <span className="label">📱 Telepon:</span>

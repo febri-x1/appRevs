@@ -27,9 +27,38 @@
       "tanggal": "2025-11-11",
       "waktu": "11:00",
       "catatan": "ganti oli",
-      "status": "pending",
+      "status": "cancelled",
       "createdAt": "2025-11-09T05:26:02.939Z",
-      "updatedAt": "2025-11-09T06:35:45.893Z"
+      "updatedAt": "2025-11-09T15:32:25.698Z"
+    },
+    {
+      "id": "1762701527953",
+      "userId": "1762622161600",
+      "nama": "sandi",
+      "nomorTelepon": "081295884234",
+      "email": "user12@example.com",
+      "jenisKendaraan": "matic",
+      "typeKendaraan": "Honda Beat",
+      "tanggal": "2025-11-13",
+      "waktu": "14:00",
+      "catatan": "Ganti kampas rem depan",
+      "status": "cancelled",
+      "createdAt": "2025-11-09T15:18:47.953Z",
+      "updatedAt": "2025-11-09T15:32:30.748Z"
+    },
+    {
+      "id": "1762702400726",
+      "userId": "1762622161600",
+      "nama": "Deo",
+      "nomorTelepon": "081295883256",
+      "email": "user3@example.com",
+      "jenisKendaraan": "bebek",
+      "typeKendaraan": "Supra X",
+      "tanggal": "2025-11-11",
+      "waktu": "15:00",
+      "catatan": "ganti oli",
+      "status": "pending",
+      "createdAt": "2025-11-09T15:33:20.727Z"
     }
   ]
 }

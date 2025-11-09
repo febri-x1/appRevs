@@ -184,6 +184,10 @@ function AdminDashboard() {
                       <span className="label">📱 Telepon:</span>
                       <span className="value">{booking.nomorTelepon}</span>
                     </div>
+                    <div className="detail-item">
+                      <span className="label">Nomor Plat</span>
+                      <span className="value">{booking.noPolisi}</span>
+                    </div>
                     {booking.catatan && (
                       <div className="detail-item full">
                         <span className="label">📝 Catatan:</span>
