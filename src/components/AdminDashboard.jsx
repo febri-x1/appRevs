@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import '../style/booking.css'; // Kita gunakan style yang sama
+import Logout from './Logout';
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   
   // Ambil data admin dari token
   const token = localStorage.getItem('authToken');
@@ -18,6 +20,15 @@ function AdminDashboard() {
       console.error('Token tidak valid:', error);
     }
   }
+
+  const confirmLogout = () => {
+    localStorage.removeItem('authToken');
+    navigate('/login');
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
+  };
 
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -85,8 +96,7 @@ function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    navigate('/login');
+    setShowLogoutModal(true);
   };
 
   // Format tanggal Indonesia
@@ -137,7 +147,7 @@ function AdminDashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="dashboard-main" style={{ gridTemplateColumns: '1fr' }}>
+      <main className="dashboard-main">
         <div className="history-container">
           <div className="history-header">
             <h2>📋 Manajemen Booking</h2>
@@ -154,69 +164,77 @@ function AdminDashboard() {
             </div>
           ) : (
             <div className="bookings-list">
-              {bookings.map((booking) => (
-                <div key={booking.id} className="booking-item">
-                  <div className="booking-header-item">
-                    <div>
-                      <h3>{booking.typeKendaraan}</h3>
-                      <span className="vehicle-type">
-                        {booking.jenisKendaraan.toUpperCase()}
-                      </span>
-                    </div>
-                    {/* Tampilkan badge status saat ini */}
-                    {getStatusBadge(booking.status)}
-                  </div>
-
-                  <div className="booking-details">
-                    <div className="detail-item">
-                      <span className="label">📅 Tanggal:</span>
-                      <span className="value">{formatDate(booking.tanggal)}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="label">⏰ Waktu:</span>
-                      <span className="value">{booking.waktu}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="label">👤 Nama:</span>
-                      <span className="value">{booking.nama}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="label">📱 Telepon:</span>
-                      <span className="value">{booking.nomorTelepon}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="label">Nomor Plat</span>
-                      <span className="value">{booking.noPolisi}</span>
-                    </div>
-                    {booking.catatan && (
-                      <div className="detail-item full">
-                        <span className="label">📝 Catatan:</span>
-                        <span className="value">{booking.catatan}</span>
+              {bookings.map((booking) => {
+                return (
+                  <div key={booking.id} className="booking-item">
+                    <div className="booking-header-item">
+                      <div>
+                        <h3>{booking.typeKendaraan}</h3>
+                        <span className="vehicle-type">
+                          {booking.jenisKendaraan.toUpperCase()}
+                        </span>
                       </div>
-                    )}
-                  </div>
+                      {/* Tampilkan badge status saat ini */}
+                      {getStatusBadge(booking.status)}
+                    </div>
 
-                  {/* Ini adalah inti fiturnya */}
-                  <div className="admin-actions">
-                    <label htmlFor={`status-${booking.id}`}>
-                      Ubah Status Pengerjaan:
-                    </label>
-                    <select
-                      id={`status-${booking.id}`}
-                      className="status-select"
-                      value={booking.status}
-                      onChange={(e) => handleStatusChange(booking.id, e.target.value)}
-                    >
-                      <option value="pending">Menunggu Konfirmasi</option>
-                      <option value="confirmed">Menunggu Servis</option>
-                      <option value="in_progress">Sedang Dikerjakan</option>
-                      <option value="completed">Selesai Dikerjakan</option>
-                      <option value="cancelled">Dibatalkan</option>
-                    </select>
-                  </div>
+                    <div className="booking-details">
+                      <div className="detail-item">
+                        <span className="label">📅 Tanggal:</span>
+                        <span className="value">{formatDate(booking.tanggal)}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">⏰ Waktu:</span>
+                        <span className="value">{booking.waktu}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">👤 Nama:</span>
+                        <span className="value">{booking.nama}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">📱 Telepon:</span>
+                        <span className="value">{booking.nomorTelepon}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Nomor Plat</span>
+                        <span className="value">{booking.noPolisi}</span>
+                      </div>
+                      {booking.catatan && (
+                        <div className="detail-item full">
+                          <span className="label">📝 Catatan:</span>
+                          <span className="value">{booking.catatan}</span>
+                        </div>
+                      )}
+                    </div>
 
-                </div>
-              ))}
+                    {/* Ini adalah inti fiturnya */}
+                    <div className="admin-actions">
+                      <label htmlFor={`status-${booking.id}`}>
+                        Ubah Status Pengerjaan:
+                      </label>
+                      <select
+                        id={`status-${booking.id}`}
+                        className="status-select"
+                        value={booking.status}
+                        onChange={(e) => handleStatusChange(booking.id, e.target.value)}
+                      >
+                        <option value="pending">Menunggu Konfirmasi</option>
+                        <option value="confirmed">Menunggu Servis</option>
+                        <option value="in_progress">Sedang Dikerjakan</option>
+                        <option value="completed">Selesai Dikerjakan</option>
+                        <option value="cancelled">Dibatalkan</option>
+                      </select>
+                    </div>
+
+                      
+                    </div>
+                );
+              })}
+              <Logout
+                      isOpen={showLogoutModal}
+                      onConfirm={confirmLogout}
+                      onCancel={cancelLogout}
+                      userType="admin" />
             </div>
           )}
         </div>

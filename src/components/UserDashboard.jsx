@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import '../style/booking.css';
-
+import Logout from './Logout';
 function UserDashboard() {
   const navigate = useNavigate();
   
@@ -224,10 +224,21 @@ function UserDashboard() {
     }
   };
 
+  // State untuk logout confirmation
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
   const handleLogout = () => {
+     setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     localStorage.removeItem('authToken');
     navigate('/login');
   };
+
+   const cancelLogout = () => {
+    setShowLogoutModal(false);
+   };
 
   // Get minimum date (today)
   const today = new Date().toISOString().split('T')[0];
@@ -239,13 +250,11 @@ function UserDashboard() {
   };
 
   // Status badge
-// Status badge
   const getStatusBadge = (status) => {
     const statusConfig = {
-      pending: { text: 'Menunggu Konfirmasi', color: '#ffc107', icon: '⏳' },
-      confirmed: { text: 'Menunggu Servis', color: '#28a745', icon: '✅' },
-      in_progress: { text: 'Sedang Dikerjakan', color: '#17a2b8', icon: '🔧' },
-      completed: { text: 'Selesai Dikerjakan', color: '#007bff', icon: '🏁' },
+      pending: { text: 'Menunggu', color: '#ffc107', icon: '⏳' },
+      confirmed: { text: 'Dikonfirmasi', color: '#28a745', icon: '✅' },
+      completed: { text: 'Selesai', color: '#007bff', icon: '🏁' },
       cancelled: { text: 'Dibatalkan', color: '#dc3545', icon: '❌' }
     };
 
@@ -264,6 +273,7 @@ function UserDashboard() {
       </span>
     );
   };
+
   return (
     <div className="dashboard-container">
       {/* Header */}
@@ -355,7 +365,7 @@ function UserDashboard() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="email@example.com"
+                      placeholder="email@gmail.com"
                       required
                     />
                   </div>
@@ -382,24 +392,8 @@ function UserDashboard() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="typeKendaraan">
-                      <span className="required">*</span> Type Kendaraan
-                    </label>
-                    <input
-                      type="text"
-                      id="typeKendaraan"
-                      name="typeKendaraan"
-                      value={formData.typeKendaraan}
-                      onChange={handleChange}
-                      placeholder="Contoh: Honda Scoopy"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
                     <label htmlFor="noPolisi">
-                      <span className="required">*</span> Nomor Plat
+                      <span className="required">*</span> No Plat
                     </label>
                     <input
                       type="text"
@@ -407,10 +401,26 @@ function UserDashboard() {
                       name="noPolisi"
                       value={formData.noPolisi}
                       onChange={handleChange}
-                      placeholder="Contoh: A****XY"
+                      placeholder="Contoh: A****XX"
                       required
                     />
                   </div>
+                </div>
+
+                 <div className="form-group">
+                    <label htmlFor="typeKendaraan">
+                      <span className="required">*</span>Type Kendaraan
+                    </label>
+                    <input
+                      type="text"
+                      id="typeKendaraan"
+                      name="typeKendaraan"
+                      value={formData.typeKendaraan}
+                      onChange={handleChange}
+                      placeholder="Honda scoopy"
+                      required
+                    />
+                    </div>
 
                 {/* Tanggal & Waktu */}
                 <div className="form-row">
@@ -606,8 +616,8 @@ function UserDashboard() {
                             <span className="value">{booking.nama}</span>
                           </div>
                           <div className="detail-item">
-                            <span className="label">Nomor Polisi:</span>
-                            <span className="value">{booking.noPolisi}</span>
+                            <span className="label">No Plat:</span>
+                            <span className='value'>{booking.noPolisi}</span>
                           </div>
                           <div className="detail-item">
                             <span className="label">📱 Telepon:</span>
@@ -646,6 +656,15 @@ function UserDashboard() {
           </div>
         )}
       </main>
+
+    <div className="dashboard-container"> 
+      <Logout 
+        isOpen={showLogoutModal}
+        onConfirm={confirmLogout}
+        onCancel={cancelLogout}
+        userType="user"
+      />
+    </div>
     </div>
   );
 }

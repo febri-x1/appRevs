@@ -27,9 +27,9 @@
       "tanggal": "2025-11-11",
       "waktu": "11:00",
       "catatan": "ganti oli",
-      "status": "cancelled",
+      "status": "pending",
       "createdAt": "2025-11-09T05:26:02.939Z",
-      "updatedAt": "2025-11-09T15:32:25.698Z"
+      "updatedAt": "2025-11-11T13:05:43.231Z"
     },
     {
       "id": "1762701527953",
@@ -42,9 +42,9 @@
       "tanggal": "2025-11-13",
       "waktu": "14:00",
       "catatan": "Ganti kampas rem depan",
-      "status": "cancelled",
+      "status": "completed",
       "createdAt": "2025-11-09T15:18:47.953Z",
-      "updatedAt": "2025-11-09T15:32:30.748Z"
+      "updatedAt": "2025-11-11T13:06:00.294Z"
     },
     {
       "id": "1762702400726",
@@ -58,7 +58,38 @@
       "waktu": "15:00",
       "catatan": "ganti oli",
       "status": "pending",
-      "createdAt": "2025-11-09T15:33:20.727Z"
+      "createdAt": "2025-11-09T15:33:20.727Z",
+      "updatedAt": "2025-11-11T13:05:51.089Z"
+    },
+    {
+      "id": "1762869572143",
+      "userId": "1762622161600",
+      "nama": "user001",
+      "nomorTelepon": "081267586978",
+      "email": "user1@example.com",
+      "jenisKendaraan": "matic",
+      "typeKendaraan": "Vario 125",
+      "noPolisi": "A6758YZ",
+      "tanggal": "2025-11-13",
+      "waktu": "16:00",
+      "catatan": "ganti lampu",
+      "status": "pending",
+      "createdAt": "2025-11-11T13:59:32.143Z"
+    },
+    {
+      "id": "1762871071491",
+      "userId": "1762622161600",
+      "nama": "Randi",
+      "nomorTelepon": "081324357648",
+      "email": "randi@gmail.com",
+      "jenisKendaraan": "sport",
+      "typeKendaraan": "YAMAHA R1M",
+      "noPolisi": "BE1423WK",
+      "tanggal": "2025-11-14",
+      "waktu": "14:00",
+      "catatan": "Ganti Oli, Rem, Injeksi",
+      "status": "pending",
+      "createdAt": "2025-11-11T14:24:31.491Z"
     }
   ]
 }
