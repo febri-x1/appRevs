@@ -1,14 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import '../style/booking.css'; // Kita gunakan style yang sama
 import Logout from './Logout';
+import '../style/admin.css';
 
 function AdminDashboard() {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' atau 'bookings'
   
-  // Ambil data admin dari token
+  // State untuk data
+  const [bookings, setBookings] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [stats, setStats] = useState({
+    totalBookings: 0,
+    pendingBookings: 0,
+    confirmedBookings: 0,
+    completedBookings: 0,
+    cancelledBookings: 0,
+    totalUsers: 0,
+    todayBookings: 0,
+    thisWeekBookings: 0,
+    thisMonthBookings: 0
+  });
+
+  // State untuk filter
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterDate, setFilterDate] = useState('all');
+
   const token = localStorage.getItem('authToken');
   let username = 'Admin';
   
@@ -21,52 +41,73 @@ function AdminDashboard() {
     }
   }
 
-  const confirmLogout = () => {
-    localStorage.removeItem('authToken');
-    navigate('/login');
-  };
+  // Fetch data saat component mount
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const cancelLogout = () => {
-    setShowLogoutModal(false);
-  };
+  // Hitung statistik setiap kali bookings berubah
+  useEffect(() => {
+    calculateStats();
+  }, [bookings, users]);
 
-  const [bookings, setBookings] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Fungsi untuk mengambil semua booking
-  const fetchAllBookings = async () => {
+  // Fetch all data
+  const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/bookings', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      // Fetch bookings
+      const bookingsRes = await fetch('http://localhost:3001/api/bookings', {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!response.ok) {
-        throw new Error('Gagal mengambil data booking');
-      }
-      const data = await response.json();
-      // Urutkan: pending & confirmed di atas
-      data.bookings.sort((a, b) => {
-        const order = { pending: 1, confirmed: 2, in_progress: 3, completed: 4, cancelled: 5 };
-        return (order[a.status] || 99) - (order[b.status] || 99);
+      const bookingsData = await bookingsRes.json();
+
+      // Fetch users
+      const usersRes = await fetch('http://localhost:3001/api/users', {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      setBookings(data.bookings);
+      const usersData = await usersRes.json();
+
+      setBookings(bookingsData.bookings || []);
+      setUsers(usersData.users || []);
     } catch (error) {
-      console.error('Error fetching bookings:', error);
-      alert('❌ Gagal memuat data booking');
+      console.error('Error fetching data:', error);
+      alert('❌ Gagal memuat data');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Panggil fetchBookings saat komponen dimuat
-  useEffect(() => {
-    fetchAllBookings();
-  }, []);
+  // Hitung statistik
+  const calculateStats = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const thisWeek = getWeekStart();
+    const thisMonth = new Date().toISOString().slice(0, 7);
 
-  // Fungsi untuk update status
-  const handleStatusChange = async (bookingId, newStatus) => {
+    const newStats = {
+      totalBookings: bookings.length,
+      pendingBookings: bookings.filter(b => b.status === 'pending').length,
+      confirmedBookings: bookings.filter(b => b.status === 'confirmed').length,
+      completedBookings: bookings.filter(b => b.status === 'completed').length,
+      cancelledBookings: bookings.filter(b => b.status === 'cancelled').length,
+      totalUsers: users.length,
+      todayBookings: bookings.filter(b => b.tanggal === today).length,
+      thisWeekBookings: bookings.filter(b => b.tanggal >= thisWeek).length,
+      thisMonthBookings: bookings.filter(b => b.tanggal.startsWith(thisMonth)).length
+    };
+
+    setStats(newStats);
+  };
+
+  // Helper: Get week start date
+  const getWeekStart = () => {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    return new Date(now.setDate(diff)).toISOString().split('T')[0];
+  };
+
+  // Update status booking
+  const updateBookingStatus = async (bookingId, newStatus) => {
     try {
       const response = await fetch(`http://localhost:3001/api/bookings/${bookingId}`, {
         method: 'PATCH',
@@ -77,167 +118,328 @@ function AdminDashboard() {
         body: JSON.stringify({ status: newStatus })
       });
 
-      if (!response.ok) {
-        throw new Error('Gagal update status');
-      }
+      if (!response.ok) throw new Error('Gagal update status');
 
-      // Update status di state secara lokal (lebih cepat)
-      setBookings(prevBookings => 
-        prevBookings.map(b => 
-          b.id === bookingId ? { ...b, status: newStatus } : b
-        )
-      );
-      // fetchAllBookings(); // Atau fetch ulang
-      
+      alert('✅ Status booking berhasil diubah!');
+      fetchData();
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('❌ Gagal update status');
+      alert('❌ Gagal mengubah status');
     }
   };
 
-  const handleLogout = () => {
-    setShowLogoutModal(true);
-  };
-
-  // Format tanggal Indonesia
+  // Format tanggal
   const formatDate = (dateString) => {
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
     return new Date(dateString).toLocaleDateString('id-ID', options);
   };
 
-  // Status badge
+  // Get status badge
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      pending: { text: 'Menunggu Konfirmasi', color: '#ffc107', icon: '⏳' },
-      confirmed: { text: 'Menunggu Servis', color: '#28a745', icon: '✅' },
-      in_progress: { text: 'Sedang Dikerjakan', color: '#17a2b8', icon: '🔧' },
-      completed: { text: 'Selesai Dikerjakan', color: '#007bff', icon: '🏁' },
+    const config = {
+      pending: { text: 'Menunggu', color: '#ffc107', icon: '⏳' },
+      confirmed: { text: 'Dikonfirmasi', color: '#28a745', icon: '✅' },
+      completed: { text: 'Selesai', color: '#007bff', icon: '🏁' },
       cancelled: { text: 'Dibatalkan', color: '#dc3545', icon: '❌' }
     };
-
-    const config = statusConfig[status] || statusConfig.pending;
-
-    return (
-      <span style={{
-        background: config.color,
-        color: 'white',
-        padding: '0.25rem 0.75rem',
-        borderRadius: '12px',
-        fontSize: '0.85rem',
-        fontWeight: 'bold'
-      }}>
-        {config.icon} {config.text}
-      </span>
-    );
+    const c = config[status] || config.pending;
+    return <span className="status-badge" style={{ background: c.color }}>{c.icon} {c.text}</span>;
   };
 
+  // Filter bookings
+  const getFilteredBookings = () => {
+    let filtered = [...bookings];
+
+    // Filter by status
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(b => b.status === filterStatus);
+    }
+
+    // Filter by date
+    const today = new Date().toISOString().split('T')[0];
+    const thisWeek = getWeekStart();
+    const thisMonth = new Date().toISOString().slice(0, 7);
+
+    if (filterDate === 'today') {
+      filtered = filtered.filter(b => b.tanggal === today);
+    } else if (filterDate === 'week') {
+      filtered = filtered.filter(b => b.tanggal >= thisWeek);
+    } else if (filterDate === 'month') {
+      filtered = filtered.filter(b => b.tanggal.startsWith(thisMonth));
+    }
+
+    return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  };
+
+  // Logout handlers
+  const handleLogout = () => setShowLogoutModal(true);
+  const confirmLogout = () => {
+    localStorage.removeItem('authToken');
+    navigate('/login');
+  };
+  const cancelLogout = () => setShowLogoutModal(false);
+
   return (
-    <div className="dashboard-container">
-      {/* Header */}
-      <header className="dashboard-header">
-        <div className="header-content">
-          <h1>🛡️ Dashboard Admin</h1>
-          <div className="user-info">
-            <span>Halo, <strong>{username}</strong></span>
-            <button onClick={handleLogout} className="btn-logout">
-              Logout
-            </button>
-          </div>
+    <div className="admin-container">
+      <Logout 
+        isOpen={showLogoutModal}
+        onConfirm={confirmLogout}
+        onCancel={cancelLogout}
+        userType="admin"
+      />
+
+      {/* Sidebar */}
+      <aside className="admin-sidebar">
+        <div className="sidebar-header">
+          <h2>🛡️ Admin Panel</h2>
+          <p>{username}</p>
         </div>
-      </header>
+        <nav className="sidebar-nav">
+          <button 
+            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            📊 Dashboard
+          </button>
+          <button 
+            className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('bookings')}
+          >
+            📋 Kelola Booking
+          </button>
+          <button className="nav-item" onClick={handleLogout}>
+            🚪 Logout
+          </button>
+        </nav>
+      </aside>
 
       {/* Main Content */}
-      <main className="dashboard-main">
-        <div className="history-container">
-          <div className="history-header">
-            <h2>📋 Manajemen Booking</h2>
-            <button onClick={fetchAllBookings} className="btn-refresh" disabled={isLoading}>
-              {isLoading ? '⏳ Memuat...' : '🔄 Refresh'}
-            </button>
+      <main className="admin-main">
+        {/* Header */}
+        <header className="admin-header">
+          <h1>{activeTab === 'dashboard' ? '📊 Dashboard Analytics' : '📋 Kelola Booking'}</h1>
+          <button onClick={fetchData} className="btn-refresh">
+            🔄 Refresh Data
+          </button>
+        </header>
+
+        {isLoading ? (
+          <div className="loading">⏳ Memuat data...</div>
+        ) : activeTab === 'dashboard' ? (
+          // TAB DASHBOARD
+          <div className="dashboard-content">
+            {/* Stats Cards */}
+            <div className="stats-grid">
+              <div className="stat-card primary">
+                <div className="stat-icon">📦</div>
+                <div className="stat-info">
+                  <h3>{stats.totalBookings}</h3>
+                  <p>Total Booking</p>
+                </div>
+              </div>
+
+              <div className="stat-card warning">
+                <div className="stat-icon">⏳</div>
+                <div className="stat-info">
+                  <h3>{stats.pendingBookings}</h3>
+                  <p>Menunggu Konfirmasi</p>
+                </div>
+              </div>
+
+              <div className="stat-card success">
+                <div className="stat-icon">✅</div>
+                <div className="stat-info">
+                  <h3>{stats.confirmedBookings}</h3>
+                  <p>Dikonfirmasi</p>
+                </div>
+              </div>
+
+              <div className="stat-card info">
+                <div className="stat-icon">🏁</div>
+                <div className="stat-info">
+                  <h3>{stats.completedBookings}</h3>
+                  <p>Selesai</p>
+                </div>
+              </div>
+
+              <div className="stat-card danger">
+                <div className="stat-icon">❌</div>
+                <div className="stat-info">
+                  <h3>{stats.cancelledBookings}</h3>
+                  <p>Dibatalkan</p>
+                </div>
+              </div>
+
+              <div className="stat-card dark">
+                <div className="stat-icon">👥</div>
+                <div className="stat-info">
+                  <h3>{stats.totalUsers}</h3>
+                  <p>Total Pengguna</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Period Stats */}
+            <div className="period-stats">
+              <div className="period-card">
+                <h3>📅 Hari Ini</h3>
+                <p className="period-value">{stats.todayBookings}</p>
+                <p className="period-label">Booking</p>
+              </div>
+              <div className="period-card">
+                <h3>📆 Minggu Ini</h3>
+                <p className="period-value">{stats.thisWeekBookings}</p>
+                <p className="period-label">Booking</p>
+              </div>
+              <div className="period-card">
+                <h3>📊 Bulan Ini</h3>
+                <p className="period-value">{stats.thisMonthBookings}</p>
+                <p className="period-label">Booking</p>
+              </div>
+            </div>
+
+            {/* Recent Bookings */}
+            <div className="recent-section">
+              <h2>🕐 Booking Terbaru</h2>
+              <div className="recent-list">
+                {bookings.slice(0, 5).map(booking => (
+                  <div key={booking.id} className="recent-item">
+                    <div className="recent-info">
+                      <h4>{booking.nama}</h4>
+                      <p>{booking.typeKendaraan} • {formatDate(booking.tanggal)}</p>
+                    </div>
+                    {getStatusBadge(booking.status)}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Vehicle Types Chart */}
+            <div className="chart-section">
+              <h2>🏍️ Jenis Kendaraan</h2>
+              <div className="vehicle-stats">
+                {['matic', 'bebek', 'sport'].map(type => {
+                  const count = bookings.filter(b => b.jenisKendaraan === type).length;
+                  const percentage = bookings.length ? ((count / bookings.length) * 100).toFixed(1) : 0;
+                  return (
+                    <div key={type} className="vehicle-item">
+                      <div className="vehicle-label">
+                        <span>{type.toUpperCase()}</span>
+                        <span>{count} ({percentage}%)</span>
+                      </div>
+                      <div className="vehicle-bar">
+                        <div 
+                          className="vehicle-progress" 
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
+        ) : (
+          // TAB KELOLA BOOKING
+          <div className="bookings-content">
+            {/* Filters */}
+            <div className="filters">
+              <div className="filter-group">
+                <label>Status:</label>
+                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                  <option value="all">Semua Status</option>
+                  <option value="pending">Menunggu</option>
+                  <option value="confirmed">Dikonfirmasi</option>
+                  <option value="completed">Selesai</option>
+                  <option value="cancelled">Dibatalkan</option>
+                </select>
+              </div>
 
-          {isLoading ? (
-            <div className="loading">⏳ Memuat data...</div>
-          ) : bookings.length === 0 ? (
-            <div className="empty-state">
-              <p>📭 Belum ada data booking</p>
+              <div className="filter-group">
+                <label>Periode:</label>
+                <select value={filterDate} onChange={(e) => setFilterDate(e.target.value)}>
+                  <option value="all">Semua Waktu</option>
+                  <option value="today">Hari Ini</option>
+                  <option value="week">Minggu Ini</option>
+                  <option value="month">Bulan Ini</option>
+                </select>
+              </div>
             </div>
-          ) : (
-            <div className="bookings-list">
-              {bookings.map((booking) => {
-                return (
-                  <div key={booking.id} className="booking-item">
-                    <div className="booking-header-item">
-                      <div>
-                        <h3>{booking.typeKendaraan}</h3>
-                        <span className="vehicle-type">
-                          {booking.jenisKendaraan.toUpperCase()}
-                        </span>
-                      </div>
-                      {/* Tampilkan badge status saat ini */}
-                      {getStatusBadge(booking.status)}
-                    </div>
 
-                    <div className="booking-details">
-                      <div className="detail-item">
-                        <span className="label">📅 Tanggal:</span>
-                        <span className="value">{formatDate(booking.tanggal)}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="label">⏰ Waktu:</span>
-                        <span className="value">{booking.waktu}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="label">👤 Nama:</span>
-                        <span className="value">{booking.nama}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="label">📱 Telepon:</span>
-                        <span className="value">{booking.nomorTelepon}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="label">Nomor Plat</span>
-                        <span className="value">{booking.noPolisi}</span>
-                      </div>
-                      {booking.catatan && (
-                        <div className="detail-item full">
-                          <span className="label">📝 Catatan:</span>
-                          <span className="value">{booking.catatan}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Ini adalah inti fiturnya */}
-                    <div className="admin-actions">
-                      <label htmlFor={`status-${booking.id}`}>
-                        Ubah Status Pengerjaan:
-                      </label>
-                      <select
-                        id={`status-${booking.id}`}
-                        className="status-select"
-                        value={booking.status}
-                        onChange={(e) => handleStatusChange(booking.id, e.target.value)}
-                      >
-                        <option value="pending">Menunggu Konfirmasi</option>
-                        <option value="confirmed">Menunggu Servis</option>
-                        <option value="in_progress">Sedang Dikerjakan</option>
-                        <option value="completed">Selesai Dikerjakan</option>
-                        <option value="cancelled">Dibatalkan</option>
-                      </select>
-                    </div>
-
-                      
-                    </div>
-                );
-              })}
-              <Logout
-                      isOpen={showLogoutModal}
-                      onConfirm={confirmLogout}
-                      onCancel={cancelLogout}
-                      userType="admin" />
+            {/* Bookings Table */}
+            <div className="bookings-table">
+              {getFilteredBookings().length === 0 ? (
+                <div className="empty-state">📭 Tidak ada booking</div>
+              ) : (
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nama</th>
+                      <th>Kendaraan</th>
+                      <th>Tanggal</th>
+                      <th>Waktu</th>
+                      <th>Telepon</th>
+                      <th>Status</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getFilteredBookings().map(booking => (
+                      <tr key={booking.id}>
+                        <td>#{booking.id.slice(-6)}</td>
+                        <td>{booking.nama}</td>
+                        <td>
+                          <div className="vehicle-cell">
+                            <span className="vehicle-type-badge">
+                              {booking.jenisKendaraan}
+                            </span>
+                            <span>{booking.typeKendaraan}</span>
+                          </div>
+                        </td>
+                        <td>{formatDate(booking.tanggal)}</td>
+                        <td>{booking.waktu}</td>
+                        <td>{booking.nomorTelepon}</td>
+                        <td>{getStatusBadge(booking.status)}</td>
+                        <td>
+                          <div className="action-buttons">
+                            {booking.status === 'pending' && (
+                              <button 
+                                className="btn-action confirm"
+                                onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                                title="Konfirmasi"
+                              >
+                                ✅
+                              </button>
+                            )}
+                            {booking.status === 'confirmed' && (
+                              <button 
+                                className="btn-action complete"
+                                onClick={() => updateBookingStatus(booking.id, 'completed')}
+                                title="Selesai"
+                              >
+                                🏁
+                              </button>
+                            )}
+                            {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                              <button 
+                                className="btn-action cancel"
+                                onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                                title="Batalkan"
+                              >
+                                ❌
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </main>
     </div>
   );

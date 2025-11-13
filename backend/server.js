@@ -121,10 +121,10 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/bookings', verifyToken, async (req, res) => {
   console.log('📥 Booking request received:', req.body);
   
-  const { nama, nomorTelepon, email, jenisKendaraan, typeKendaraan, noPolisi, tanggal, waktu, catatan } = req.body;
+  const { nama, nomorTelepon, email, jenisKendaraan, typeKendaraan, tanggal, waktu, catatan } = req.body;
 
   // Validasi input
-  if (!nama || !nomorTelepon || !email || !jenisKendaraan || !typeKendaraan || !noPolisi || !tanggal || !waktu) {
+  if (!nama || !nomorTelepon || !email || !jenisKendaraan || !typeKendaraan || !tanggal || !waktu) {
     return res.status(400).json({ 
       message: 'Semua field wajib diisi kecuali catatan',
       missingFields: {
@@ -133,7 +133,6 @@ app.post('/api/bookings', verifyToken, async (req, res) => {
         email: !email,
         jenisKendaraan: !jenisKendaraan,
         typeKendaraan: !typeKendaraan,
-        noPolisi: !noPolisi,
         tanggal: !tanggal,
         waktu: !waktu
       }
@@ -155,7 +154,6 @@ app.post('/api/bookings', verifyToken, async (req, res) => {
     email,
     jenisKendaraan,
     typeKendaraan,
-    noPolisi,
     tanggal,
     waktu,
     catatan: catatan || '',
@@ -295,6 +293,27 @@ app.patch('/api/bookings/:id/cancel', verifyToken, (req, res) => {
     message: 'Booking berhasil dibatalkan',
     booking: booking
   });
+});
+
+/**
+ * Get All Users (ADMIN ONLY)
+ */
+app.get('/api/users', verifyToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Akses ditolak' });
+  }
+
+  const db = readDB();
+  
+  // Kirim users tanpa password
+  const usersWithoutPassword = db.users.map(user => ({
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.role
+  }));
+
+  res.json({ users: usersWithoutPassword });
 });
 
 // --- Jalankan Server ---

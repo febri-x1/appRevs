@@ -88,8 +88,25 @@
       "tanggal": "2025-11-14",
       "waktu": "14:00",
       "catatan": "Ganti Oli, Rem, Injeksi",
-      "status": "pending",
-      "createdAt": "2025-11-11T14:24:31.491Z"
+      "status": "completed",
+      "createdAt": "2025-11-11T14:24:31.491Z",
+      "updatedAt": "2025-11-13T13:26:56.027Z"
+    },
+    {
+      "id": "1762962094131",
+      "userId": "1762622161600",
+      "nama": "123456",
+      "nomorTelepon": "0834567898",
+      "email": "user@example.com",
+      "jenisKendaraan": "matic",
+      "typeKendaraan": "honda scoopy",
+      "noPolisi": "A6569GL",
+      "tanggal": "2025-11-13",
+      "waktu": "09:00",
+      "catatan": "ganti ban depan ",
+      "status": "completed",
+      "createdAt": "2025-11-12T15:41:34.131Z",
+      "updatedAt": "2025-11-13T13:25:57.690Z"
     }
   ]
 }
