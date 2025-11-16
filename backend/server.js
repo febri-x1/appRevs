@@ -28,6 +28,26 @@ const writeDB = (data) => {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 };
 
+const generateBookingId = (db) => {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+  const year = String(today.getFullYear()).slice(-2);
+  const prefix = `${day}${month}${year}`;
+
+  // Inisialisasi bookings jika belum ada
+  if (!db.bookings) {
+    db.bookings = [];
+  }
+
+  // Cari booking hari ini untuk menentukan antrian
+  const todayBookings = db.bookings.filter(b => b.id.startsWith(prefix));
+  
+  const nextSequence = String(todayBookings.length + 1).padStart(3, '0');
+
+  return `${prefix}${nextSequence}`;
+};
+
 // --- Middleware Verifikasi Token ---
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -121,10 +141,11 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/bookings', verifyToken, async (req, res) => {
   console.log('📥 Booking request received:', req.body);
   
-  const { nama, nomorTelepon, email, jenisKendaraan, typeKendaraan, tanggal, waktu, catatan } = req.body;
+  // 1. Tambahkan noPolisi di sini
+  const { nama, nomorTelepon, email, jenisKendaraan, typeKendaraan, noPolisi, tanggal, waktu, catatan } = req.body;
 
-  // Validasi input
-  if (!nama || !nomorTelepon || !email || !jenisKendaraan || !typeKendaraan || !tanggal || !waktu) {
+  // 2. Tambahkan noPolisi ke validasi
+  if (!nama || !nomorTelepon || !email || !jenisKendaraan || !typeKendaraan || !noPolisi || !tanggal || !waktu) {
     return res.status(400).json({ 
       message: 'Semua field wajib diisi kecuali catatan',
       missingFields: {
@@ -133,6 +154,7 @@ app.post('/api/bookings', verifyToken, async (req, res) => {
         email: !email,
         jenisKendaraan: !jenisKendaraan,
         typeKendaraan: !typeKendaraan,
+        noPolisi: !noPolisi,
         tanggal: !tanggal,
         waktu: !waktu
       }
@@ -146,14 +168,18 @@ app.post('/api/bookings', verifyToken, async (req, res) => {
     db.bookings = [];
   }
 
+  // 3. Panggil fungsi generator ID baru
+  const newBookingId = generateBookingId(db);
+
   const newBooking = {
-    id: Date.now().toString(),
+    id: newBookingId, // <-- ID BARU
     userId: req.user.id,
     nama,
     nomorTelepon,
     email,
     jenisKendaraan,
     typeKendaraan,
+    noPolisi: noPolisi, // <-- Tambahkan ini
     tanggal,
     waktu,
     catatan: catatan || '',

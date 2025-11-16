@@ -28,6 +28,8 @@ function AdminDashboard() {
   // State untuk filter
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterDate, setFilterDate] = useState('all');
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [searchId, setSearchId] = useState('');
 
   const token = localStorage.getItem('authToken');
   let username = 'Admin';
@@ -150,6 +152,15 @@ function AdminDashboard() {
   const getFilteredBookings = () => {
     let filtered = [...bookings];
 
+    // --- LOGIKA PENCARIAN BARU ---
+    // 1. Terapkan filter pencarian ID terlebih dahulu
+    const trimmedSearchId = searchId.trim();
+    if (trimmedSearchId) {
+      filtered = filtered.filter(b => 
+        b.id.includes(trimmedSearchId)
+      );
+    }
+
     // Filter by status
     if (filterStatus !== 'all') {
       filtered = filtered.filter(b => b.status === filterStatus);
@@ -179,6 +190,69 @@ function AdminDashboard() {
   };
   const cancelLogout = () => setShowLogoutModal(false);
 
+  // ... (sebelum return)
+ // const cancelLogout = () => setShowLogoutModal(false);
+
+  // --- SALIN DAN TEMPEL KOMPONEN MODAL INI ---
+  const BookingDetailModal = ({ booking, onClose }) => {
+    if (!booking) return null;
+
+    return (
+
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-content detail-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>Detail Booking #{booking.id}</h3>
+            {getStatusBadge(booking.status)}
+            <button className="modal-close" onClick={onClose}>&times;</button>
+          </div>
+          <div className="modal-body">
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span>Nama</span>
+                <p>{booking.nama}</p>
+              </div>
+              <div className="detail-item">
+                <span>Telepon</span>
+                <p>{booking.nomorTelepon}</p>
+              </div>
+              <div className="detail-item full-width">
+                <span>Email</span>
+                <p>{booking.email}</p>
+              </div>
+              <hr className="full-width" />
+              <div className="detail-item">
+                <span>Jenis</span>
+                <p>{booking.jenisKendaraan}</p>
+              </div>
+              <div className="detail-item">
+                <span>Tipe</span>
+                <p>{booking.typeKendaraan}</p>
+              </div>
+              <div className="detail-item">
+                <span>No. Plat</span>
+                <p>{booking.noPolisi || '-'}</p>
+              </div>
+              <hr className="full-width" />
+              <div className="detail-item">
+                <span>Tanggal</span>
+                <p>{formatDate(booking.tanggal)}</p>
+              </div>
+              <div className="detail-item">
+                <span>Waktu</span>
+                <p>{booking.waktu}</p>
+              </div>
+              <div className="detail-item full-width">
+                <span>Catatan/Keluhan</span>
+                <p>{booking.catatan || 'Tidak ada catatan'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="admin-container">
       <Logout 
@@ -186,6 +260,11 @@ function AdminDashboard() {
         onConfirm={confirmLogout}
         onCancel={cancelLogout}
         userType="admin"
+      />
+      
+      <BookingDetailModal 
+        booking={selectedBooking}
+        onClose={() => setSelectedBooking(null)}
       />
 
       {/* Sidebar */}
@@ -364,6 +443,19 @@ function AdminDashboard() {
                   <option value="month">Bulan Ini</option>
                 </select>
               </div>
+              {/* --- TAMBAHKAN KODE INPUT PENCARIAN INI --- */}
+              <div className="filter-group search-group">
+                <label>Cari ID Booking:</label>
+                <input 
+                  type="text" 
+                  value={searchId}
+                  onChange={(e) => setSearchId(e.target.value)}
+                  placeholder="Ketik ID booking..."
+                />
+              </div>
+              {/* --- BATAS KODE BARU --- */}
+
+
             </div>
 
             {/* Bookings Table */}
@@ -387,7 +479,7 @@ function AdminDashboard() {
                   <tbody>
                     {getFilteredBookings().map(booking => (
                       <tr key={booking.id}>
-                        <td>#{booking.id.slice(-6)}</td>
+                        <td>#{booking.id}</td>
                         <td>{booking.nama}</td>
                         <td>
                           <div className="vehicle-cell">
@@ -403,6 +495,13 @@ function AdminDashboard() {
                         <td>{getStatusBadge(booking.status)}</td>
                         <td>
                           <div className="action-buttons">
+                            <button
+                              className="btn-action detail"
+                              onClick={() => setSelectedBooking(booking)}
+                              title="Lihat Detail"
+                            >
+                              👁️
+                            </button>
                             {booking.status === 'pending' && (
                               <button 
                                 className="btn-action confirm"
