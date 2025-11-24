@@ -2,3 +2,55 @@ body {
   margin: 0;
   /* Kita pindahkan semua style lain ke form.css */
 }
+/* src/index.css */
+:root {
+  /* --- Mode Terang (Light) --- */
+  --bg-main: #f4f6f8;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --border-color: #dddddd;
+  --hover-bg: rgba(0, 123, 255, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  
+  /* Warna Tetap (Brand) */
+  --primary-color: #007bff;
+  --primary-hover: #0056b3;
+  --danger-color: #dc3545;
+  --success-color: #28a745;
+}
+
+/* --- Mode Gelap (Dark) - Sesuai style Anda sebelumnya --- */
+[data-theme="dark"] {
+  --bg-main: #1e1e1e;
+  --bg-card: #2d2d2d;
+  --bg-input: #1e1e1e;
+  --text-primary: #f0f0f0;
+  --text-secondary: #aaaaaa;
+  --border-color: #444444;
+  --hover-bg: rgba(0, 123, 255, 0.15);
+  --shadow-color: rgba(0, 0, 0, 0.4);
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s; /* Transisi halus */
+}
+
+/* Scrollbar Custom */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import Logout from './Logout';
 import '../style/admin.css';
+import ThemeToggle from './ThemeToggle';
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -300,6 +301,7 @@ function AdminDashboard() {
           <button onClick={fetchData} className="btn-refresh">
             🔄 Refresh Data
           </button>
+          <ThemeToggle/>
         </header>
 
         {isLoading ? (
@@ -453,9 +455,7 @@ function AdminDashboard() {
                   placeholder="Ketik ID booking..."
                 />
               </div>
-              {/* --- BATAS KODE BARU --- */}
-
-
+              
             </div>
 
             {/* Bookings Table */}

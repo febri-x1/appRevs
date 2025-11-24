@@ -803,3 +803,25 @@ hr.full-width {
   outline: none;
   border-color: #007bff;
 }
+.admin-container {
+  background: var(--bg-main); /* Ganti #1e1e1e */
+}
+.admin-sidebar, .admin-header, .stat-card, .recent-section, .chart-section, .bookings-table, .filters {
+  background: var(--bg-card); /* Ganti #2d2d2d */
+  border-color: var(--border-color); /* Ganti border solid */
+}
+.admin-header h1, .stat-info h3, .recent-info h4 {
+  color: var(--text-primary); /* Ganti #f0f0f0 */
+}
+.nav-item, .stat-info p, .recent-info p, th, td, label {
+  color: var(--text-secondary); /* Ganti #aaa / #ccc */
+}
+.nav-item:hover {
+  color: var(--text-primary);
+  background: var(--hover-bg);
+}
+input, select {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}

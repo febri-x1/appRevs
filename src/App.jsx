@@ -9,11 +9,15 @@ import Signup from './components/signup';
 import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import Home from './components/Home';
 
 function App() {
   return (
     <div className="App">
       <Routes>
+
+        <Route path="/" element={<Home/>} />
+
         {/* Rute Publik */}
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />

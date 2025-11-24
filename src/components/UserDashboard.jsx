@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import '../style/booking.css';
 import Logout from './Logout';
+import ThemeToggle from './ThemeToggle';
 function UserDashboard() {
   const navigate = useNavigate();
   
@@ -280,6 +281,7 @@ function UserDashboard() {
       <header className="dashboard-header">
         <div className="header-content">
           <h1>🏍️ Motor Service Center</h1>
+          <ThemeToggle/>
           <div className="user-info">
             <span>Halo, <strong>{username}</strong></span>
             <button onClick={handleLogout} className="btn-logout">
