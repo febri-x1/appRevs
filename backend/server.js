@@ -265,9 +265,16 @@ app.get('/api/bookings', verifyToken, (req, res) => {
 /**
  * Update Status Booking (ADMIN)
  */
+/**
+ * Update Booking (ADMIN - All Fields)
+ */
 app.patch('/api/bookings/:id', verifyToken, (req, res) => {
   const { id } = req.params;
-  const { status, tanggal, waktu, catatan } = req.body;
+  // Ambil semua field yang mungkin diedit
+  const { 
+    status, tanggal, waktu, catatan,
+    nama, nomorTelepon, email, jenisKendaraan, typeKendaraan, noPolisi 
+  } = req.body;
 
   const db = readDB();
 
@@ -283,30 +290,32 @@ app.patch('/api/bookings/:id', verifyToken, (req, res) => {
 
   const booking = db.bookings[bookingIndex];
 
-  // Cek kepemilikan untuk user biasa
+  // Validasi Kepemilikan (Jika bukan admin, hanya bisa edit punya sendiri)
   if (req.user.role !== 'admin' && booking.userId !== req.user.id) {
     return res.status(403).json({ message: 'Akses ditolak' });
   }
 
-  // User hanya bisa edit jika status masih pending
-  if (req.user.role !== 'admin' && booking.status !== 'pending') {
-    return res.status(403).json({ 
-      message: 'Tidak dapat mengubah booking yang sudah dikonfirmasi' 
-    });
-  }
-
-  // Update fields
+  // UPDATE DATA
+  // Kita update field hanya jika dikirim dari frontend (tidak undefined)
   if (status) booking.status = status;
   if (tanggal) booking.tanggal = tanggal;
   if (waktu) booking.waktu = waktu;
   if (catatan !== undefined) booking.catatan = catatan;
+  
+  // Field tambahan yang sekarang bisa diedit admin
+  if (nama) booking.nama = nama;
+  if (nomorTelepon) booking.nomorTelepon = nomorTelepon;
+  if (email) booking.email = email;
+  if (jenisKendaraan) booking.jenisKendaraan = jenisKendaraan;
+  if (typeKendaraan) booking.typeKendaraan = typeKendaraan;
+  if (noPolisi) booking.noPolisi = noPolisi;
   
   booking.updatedAt = new Date().toISOString();
   
   db.bookings[bookingIndex] = booking;
   writeDB(db);
 
-  console.log(`✅ Booking ${id} diupdate`);
+  console.log(`✅ Booking ${id} berhasil diupdate`);
   res.json({ 
     message: 'Booking berhasil diupdate',
     booking: booking

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../style/home.css';
 import ThemeToggle from './ThemeToggle';
+import Footer from './Footer';
 
 function Home() {
   // Fungsi smooth scroll untuk link "Home" dan "About"
@@ -19,21 +20,23 @@ function Home() {
         <div className="home-logo">
           Narko Bintang Motor 🏍️
         </div>
+
         <div className="home-nav-links">
           <a href="#home" onClick={(e) => { e.preventDefault(); scrollToSection('home'); }}>
             Home
           </a>
+
+           <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>
+            About Company
+          </a>
           
-          <ThemeToggle/>
-          
-          {/* Service Booking mengarah ke Login sesuai permintaan */}
+          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Link to="/login" className="btn-login-nav">
             Service Booking
           </Link>
-          
-          <a href="#about" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>
-            About Company
-          </a>
+          <ThemeToggle/>
+        </div>
+      
         </div>
       </nav>
 
@@ -70,38 +73,8 @@ function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="home-footer">
-        <div className="footer-content">
-          <div className="footer-section">
-            <h3>Motor Service Center</h3>
-            <p>
-              Bengkel modern terpercaya untuk segala kebutuhan perawatan motor Anda.
-            </p>
-          </div>
-          
-          <div className="footer-section">
-            <h3>Layanan</h3>
-            <ul>
-              <li>Service Rutin</li>
-              <li>Ganti Oli</li>
-              <li>Tune Up</li>
-              <li>Perbaikan Mesin</li>
-            </ul>
-          </div>
-
-          <div className="footer-section">
-            <h3>Kontak</h3>
-            <p>📍 Kp. Pabuaran Manis Jaya No.27 RT.001/RW.001, Jatiuwung, Banten.</p>
-            <p>📞 0857-7800-5980</p>
-            <p>📧 support@motorservice.com</p>
-          </div>
-        </div>
-
-        <div className="footer-bottom">
-          &copy; {new Date().getFullYear()} Narko Bintang Motor. All rights reserved.
-        </div>
-      </footer>
+      <Footer/>
+      
     </div>
   );
 }

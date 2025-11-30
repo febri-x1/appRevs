@@ -4,10 +4,11 @@ import { jwtDecode } from 'jwt-decode';
 import '../style/booking.css';
 import Logout from './Logout';
 import ThemeToggle from './ThemeToggle';
+import ChangePassword from './ChangePassword'; // 1. Import Component
+
 function UserDashboard() {
   const navigate = useNavigate();
   
-  // Ambil data user dari token
   const token = localStorage.getItem('authToken');
   let userEmail = '';
   let username = 'User';
@@ -22,10 +23,7 @@ function UserDashboard() {
     }
   }
 
-  // State untuk tab aktif
-  const [activeTab, setActiveTab] = useState('booking'); // 'booking' atau 'history'
-
-  // State untuk form booking
+  const [activeTab, setActiveTab] = useState('booking'); 
   const [formData, setFormData] = useState({
     nama: username,
     nomorTelepon: '',
@@ -38,11 +36,8 @@ function UserDashboard() {
     catatan: ''
   });
 
-  // State untuk riwayat booking
   const [bookings, setBookings] = useState([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
-
-  // State untuk edit booking
   const [editingBooking, setEditingBooking] = useState(null);
   const [editFormData, setEditFormData] = useState({
     tanggal: '',
@@ -51,15 +46,17 @@ function UserDashboard() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // State Modal
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false); // 2. State untuk Password Modal
 
-  // Fetch bookings saat tab history dibuka
   useEffect(() => {
     if (activeTab === 'history') {
       fetchBookings();
     }
   }, [activeTab]);
 
-  // Fetch riwayat booking
   const fetchBookings = async () => {
     setIsLoadingBookings(true);
     try {
@@ -83,16 +80,11 @@ function UserDashboard() {
     }
   };
 
-  // Handle perubahan input form booking
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle submit booking baru
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -115,7 +107,6 @@ function UserDashboard() {
 
       alert('✅ Booking berhasil dibuat! Kami akan menghubungi Anda segera.');
       
-      // Reset form
       setFormData({
         nama: username,
         nomorTelepon: '',
@@ -128,7 +119,6 @@ function UserDashboard() {
         catatan: ''
       });
 
-      // Pindah ke tab history
       setActiveTab('history');
 
     } catch (error) {
@@ -139,7 +129,6 @@ function UserDashboard() {
     }
   };
 
-  // Mulai edit booking
   const startEditBooking = (booking) => {
     setEditingBooking(booking.id);
     setEditFormData({
@@ -149,26 +138,16 @@ function UserDashboard() {
     });
   };
 
-  // Batal edit
   const cancelEdit = () => {
     setEditingBooking(null);
-    setEditFormData({
-      tanggal: '',
-      waktu: '',
-      catatan: ''
-    });
+    setEditFormData({ tanggal: '', waktu: '', catatan: '' });
   };
 
-  // Handle perubahan form edit
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setEditFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Submit update booking
   const handleUpdateBooking = async (bookingId) => {
     try {
       const response = await fetch(`http://localhost:3001/api/bookings/${bookingId}`, {
@@ -182,13 +161,11 @@ function UserDashboard() {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Gagal update booking');
-      }
+      if (!response.ok) throw new Error(data.message || 'Gagal update booking');
 
       alert('✅ Jadwal berhasil diubah!');
       setEditingBooking(null);
-      fetchBookings(); // Refresh list
+      fetchBookings();
 
     } catch (error) {
       console.error('Error updating booking:', error);
@@ -196,28 +173,21 @@ function UserDashboard() {
     }
   };
 
-  // Cancel booking
   const handleCancelBooking = async (bookingId) => {
-    if (!confirm('Yakin ingin membatalkan booking ini?')) {
-      return;
-    }
+    if (!confirm('Yakin ingin membatalkan booking ini?')) return;
 
     try {
       const response = await fetch(`http://localhost:3001/api/bookings/${bookingId}/cancel`, {
         method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Gagal cancel booking');
-      }
+      if (!response.ok) throw new Error(data.message || 'Gagal cancel booking');
 
       alert('✅ Booking berhasil dibatalkan');
-      fetchBookings(); // Refresh list
+      fetchBookings();
 
     } catch (error) {
       console.error('Error canceling booking:', error);
@@ -225,32 +195,20 @@ function UserDashboard() {
     }
   };
 
-  // State untuk logout confirmation
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-  const handleLogout = () => {
-     setShowLogoutModal(true);
-  };
-
+  const handleLogout = () => setShowLogoutModal(true);
   const confirmLogout = () => {
     localStorage.removeItem('authToken');
     navigate('/login');
   };
+  const cancelLogout = () => setShowLogoutModal(false);
 
-   const cancelLogout = () => {
-    setShowLogoutModal(false);
-   };
-
-  // Get minimum date (today)
   const today = new Date().toISOString().split('T')[0];
 
-  // Format tanggal Indonesia
   const formatDate = (dateString) => {
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
     return new Date(dateString).toLocaleDateString('id-ID', options);
   };
 
-  // Status badge
   const getStatusBadge = (status) => {
     const statusConfig = {
       pending: { text: 'Menunggu', color: '#ffc107', icon: '⏳' },
@@ -258,17 +216,11 @@ function UserDashboard() {
       completed: { text: 'Selesai', color: '#007bff', icon: '🏁' },
       cancelled: { text: 'Dibatalkan', color: '#dc3545', icon: '❌' }
     };
-
     const config = statusConfig[status] || statusConfig.pending;
-
     return (
       <span style={{
-        background: config.color,
-        color: 'white',
-        padding: '0.25rem 0.75rem',
-        borderRadius: '12px',
-        fontSize: '0.85rem',
-        fontWeight: 'bold'
+        background: config.color, color: 'white', padding: '0.25rem 0.75rem',
+        borderRadius: '12px', fontSize: '0.85rem', fontWeight: 'bold'
       }}>
         {config.icon} {config.text}
       </span>
@@ -277,13 +229,31 @@ function UserDashboard() {
 
   return (
     <div className="dashboard-container">
-      {/* Header */}
+      {/* --- 3. Render Modal Ganti Password --- */}
+      <ChangePassword 
+        isOpen={showPasswordModal} 
+        onClose={() => setShowPasswordModal(false)} 
+      />
+
+      <Logout 
+        isOpen={showLogoutModal}
+        onConfirm={confirmLogout}
+        onCancel={cancelLogout}
+        userType="user"
+      />
+
       <header className="dashboard-header">
         <div className="header-content">
           <h1>Narko Bintang Motor 🏍️</h1>
           <div className="user-info">
             <span>Halo, <strong>{username}</strong></span>
             <ThemeToggle/>
+            
+            {/* --- 4. Tombol Ganti Password --- */}
+            <button onClick={() => setShowPasswordModal(true)} className="btn-change-pass">
+              🔐 Ganti Password
+            </button>
+
             <button onClick={handleLogout} className="btn-logout">
               Logout
             </button>
@@ -291,7 +261,6 @@ function UserDashboard() {
         </div>
       </header>
 
-      {/* Tabs */}
       <div className="tabs-container">
         <div className="tabs">
           <button 
@@ -309,10 +278,8 @@ function UserDashboard() {
         </div>
       </div>
 
-      {/* Main Content */}
       <main className="dashboard-main">
         {activeTab === 'booking' ? (
-          // TAB BOOKING BARU
           <>
             <div className="booking-card">
               <div className="card-header">
@@ -321,137 +288,53 @@ function UserDashboard() {
               </div>
 
               <form onSubmit={handleSubmit} className="booking-form">
-                {/* Nama */}
                 <div className="form-row">
                   <div className="form-group full-width">
-                    <label htmlFor="nama">
-                      <span className="required">*</span> Nama Lengkap
-                    </label>
-                    <input
-                      type="text"
-                      id="nama"
-                      name="nama"
-                      value={formData.nama}
-                      onChange={handleChange}
-                      placeholder="Masukkan nama lengkap"
-                      required
-                    />
+                    <label htmlFor="nama"><span className="required">*</span> Nama Lengkap</label>
+                    <input type="text" id="nama" name="nama" value={formData.nama} onChange={handleChange} placeholder="Masukkan nama lengkap" required />
                   </div>
                 </div>
 
-                {/* Nomor Telepon & Email */}
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="nomorTelepon">
-                      <span className="required">*</span> Nomor Telepon/WA
-                    </label>
-                    <input
-                      type="tel"
-                      id="nomorTelepon"
-                      name="nomorTelepon"
-                      value={formData.nomorTelepon}
-                      onChange={handleChange}
-                      placeholder="08xxxxxxxxxx"
-                      pattern="[0-9]{10,13}"
-                      required
-                    />
+                    <label htmlFor="nomorTelepon"><span className="required">*</span> Nomor Telepon/WA</label>
+                    <input type="tel" id="nomorTelepon" name="nomorTelepon" value={formData.nomorTelepon} onChange={handleChange} placeholder="08xxxxxxxxxx" pattern="[0-9]{10,13}" required />
                   </div>
-
                   <div className="form-group">
-                    <label htmlFor="email">
-                      <span className="required">*</span> Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="email@gmail.com"
-                      required
-                    />
+                    <label htmlFor="email"><span className="required">*</span> Email</label>
+                    <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} placeholder="email@gmail.com" required />
                   </div>
                 </div>
 
-                {/* Jenis Kendaraan & Type */}
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="jenisKendaraan">
-                      <span className="required">*</span> Jenis Kendaraan
-                    </label>
-                    <select
-                      id="jenisKendaraan"
-                      name="jenisKendaraan"
-                      value={formData.jenisKendaraan}
-                      onChange={handleChange}
-                      required
-                    >
+                    <label htmlFor="jenisKendaraan"><span className="required">*</span> Jenis Kendaraan</label>
+                    <select id="jenisKendaraan" name="jenisKendaraan" value={formData.jenisKendaraan} onChange={handleChange} required>
                       <option value="">-- Pilih Jenis --</option>
                       <option value="matic">Matic</option>
                       <option value="bebek">Bebek</option>
                       <option value="sport">Sport</option>
                     </select>
                   </div>
-
                   <div className="form-group">
-                    <label htmlFor="noPolisi">
-                      <span className="required">*</span> No Plat
-                    </label>
-                    <input
-                      type="text"
-                      id="noPolisi"
-                      name="noPolisi"
-                      value={formData.noPolisi}
-                      onChange={handleChange}
-                      placeholder="Contoh: A****XX"
-                      required
-                    />
+                    <label htmlFor="noPolisi"><span className="required">*</span> No Plat</label>
+                    <input type="text" id="noPolisi" name="noPolisi" value={formData.noPolisi} onChange={handleChange} placeholder="Contoh: A****XX" required />
                   </div>
                 </div>
 
                  <div className="form-group">
-                    <label htmlFor="typeKendaraan">
-                      <span className="required">*</span>Type Kendaraan
-                    </label>
-                    <input
-                      type="text"
-                      id="typeKendaraan"
-                      name="typeKendaraan"
-                      value={formData.typeKendaraan}
-                      onChange={handleChange}
-                      placeholder="Honda scoopy"
-                      required
-                    />
-                    </div>
+                    <label htmlFor="typeKendaraan"><span className="required">*</span>Type Kendaraan</label>
+                    <input type="text" id="typeKendaraan" name="typeKendaraan" value={formData.typeKendaraan} onChange={handleChange} placeholder="Honda scoopy" required />
+                 </div>
 
-                {/* Tanggal & Waktu */}
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="tanggal">
-                      <span className="required">*</span> Tanggal Service
-                    </label>
-                    <input
-                      type="date"
-                      id="tanggal"
-                      name="tanggal"
-                      value={formData.tanggal}
-                      onChange={handleChange}
-                      min={today}
-                      required
-                    />
+                    <label htmlFor="tanggal"><span className="required">*</span> Tanggal Service</label>
+                    <input type="date" id="tanggal" name="tanggal" value={formData.tanggal} onChange={handleChange} min={today} required />
                   </div>
-
                   <div className="form-group">
-                    <label htmlFor="waktu">
-                      <span className="required">*</span> Waktu Service
-                    </label>
-                    <select
-                      id="waktu"
-                      name="waktu"
-                      value={formData.waktu}
-                      onChange={handleChange}
-                      required
-                    >
+                    <label htmlFor="waktu"><span className="required">*</span> Waktu Service</label>
+                    <select id="waktu" name="waktu" value={formData.waktu} onChange={handleChange} required>
                       <option value="">-- Pilih Waktu --</option>
                       <option value="08:00">08:00 - 09:00</option>
                       <option value="09:00">09:00 - 10:00</option>
@@ -465,40 +348,22 @@ function UserDashboard() {
                   </div>
                 </div>
 
-                {/* Catatan */}
                 <div className="form-row">
                   <div className="form-group full-width">
-                    <label htmlFor="catatan">
-                      Catatan / Keluhan Kendaraan
-                    </label>
-                    <textarea
-                      id="catatan"
-                      name="catatan"
-                      value={formData.catatan}
-                      onChange={handleChange}
-                      placeholder="Contoh: Mesin sering mati tiba-tiba, rem bunyi mencit, dll."
-                      rows="4"
-                    ></textarea>
-                    <small className="form-hint">
-                      Jelaskan masalah atau keluhan pada kendaraan Anda (opsional)
-                    </small>
+                    <label htmlFor="catatan">Catatan / Keluhan Kendaraan</label>
+                    <textarea id="catatan" name="catatan" value={formData.catatan} onChange={handleChange} placeholder="Contoh: Mesin sering mati tiba-tiba, rem bunyi mencit, dll." rows="4"></textarea>
+                    <small className="form-hint">Jelaskan masalah atau keluhan pada kendaraan Anda (opsional)</small>
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <div className="form-actions">
-                  <button 
-                    type="submit" 
-                    className="btn-submit"
-                    disabled={isSubmitting}
-                  >
+                  <button type="submit" className="btn-submit" disabled={isSubmitting}>
                     {isSubmitting ? '⏳ Memproses...' : '✅ Buat Booking'}
                   </button>
                 </div>
               </form>
             </div>
 
-            {/* Info Box */}
             <div className="info-box">
               <h3>📌 Informasi Penting</h3>
               <ul>
@@ -510,13 +375,10 @@ function UserDashboard() {
             </div>
           </>
         ) : (
-          // TAB RIWAYAT BOOKING
           <div className="history-container">
             <div className="history-header">
               <h2>📋 Riwayat Booking Service</h2>
-              <button onClick={fetchBookings} className="btn-refresh">
-                🔄 Refresh
-              </button>
+              <button onClick={fetchBookings} className="btn-refresh">🔄 Refresh</button>
             </div>
 
             {isLoadingBookings ? (
@@ -524,12 +386,7 @@ function UserDashboard() {
             ) : bookings.length === 0 ? (
               <div className="empty-state">
                 <p>📭 Belum ada riwayat booking</p>
-                <button 
-                  onClick={() => setActiveTab('booking')}
-                  className="btn-primary"
-                >
-                  Buat Booking Sekarang
-                </button>
+                <button onClick={() => setActiveTab('booking')} className="btn-primary">Buat Booking Sekarang</button>
               </div>
             ) : (
               <div className="bookings-list">
@@ -538,34 +395,21 @@ function UserDashboard() {
                     <div className="booking-header-item">
                       <div>
                         <h3>{booking.typeKendaraan}</h3>
-                        <span className="vehicle-type">
-                          {booking.jenisKendaraan.toUpperCase()}
-                        </span>
+                        <span className="vehicle-type">{booking.jenisKendaraan.toUpperCase()}</span>
                       </div>
                       {getStatusBadge(booking.status)}
                     </div>
 
                     {editingBooking === booking.id ? (
-                      // MODE EDIT
                       <div className="edit-form">
                         <div className="form-row">
                           <div className="form-group">
                             <label>Tanggal Service</label>
-                            <input
-                              type="date"
-                              name="tanggal"
-                              value={editFormData.tanggal}
-                              onChange={handleEditChange}
-                              min={today}
-                            />
+                            <input type="date" name="tanggal" value={editFormData.tanggal} onChange={handleEditChange} min={today} />
                           </div>
                           <div className="form-group">
                             <label>Waktu Service</label>
-                            <select
-                              name="waktu"
-                              value={editFormData.waktu}
-                              onChange={handleEditChange}
-                            >
+                            <select name="waktu" value={editFormData.waktu} onChange={handleEditChange}>
                               <option value="08:00">08:00 - 09:00</option>
                               <option value="09:00">09:00 - 10:00</option>
                               <option value="10:00">10:00 - 11:00</option>
@@ -579,30 +423,14 @@ function UserDashboard() {
                         </div>
                         <div className="form-group full-width">
                           <label>Catatan</label>
-                          <textarea
-                            name="catatan"
-                            value={editFormData.catatan}
-                            onChange={handleEditChange}
-                            rows="3"
-                          ></textarea>
+                          <textarea name="catatan" value={editFormData.catatan} onChange={handleEditChange} rows="3"></textarea>
                         </div>
                         <div className="edit-actions">
-                          <button 
-                            onClick={() => handleUpdateBooking(booking.id)}
-                            className="btn-save"
-                          >
-                            💾 Simpan
-                          </button>
-                          <button 
-                            onClick={cancelEdit}
-                            className="btn-cancel-edit"
-                          >
-                            ❌ Batal
-                          </button>
+                          <button onClick={() => handleUpdateBooking(booking.id)} className="btn-save">💾 Simpan</button>
+                          <button onClick={cancelEdit} className="btn-cancel-edit">❌ Batal</button>
                         </div>
                       </div>
                     ) : (
-                      // MODE VIEW
                       <>
                         <div className="booking-details">
                           <div className="detail-item">
@@ -635,18 +463,8 @@ function UserDashboard() {
 
                         {booking.status === 'pending' && (
                           <div className="booking-actions">
-                            <button 
-                              onClick={() => startEditBooking(booking)}
-                              className="btn-edit"
-                            >
-                              ✏️ Ubah Jadwal
-                            </button>
-                            <button 
-                              onClick={() => handleCancelBooking(booking.id)}
-                              className="btn-cancel"
-                            >
-                              🗑️ Batalkan
-                            </button>
+                            <button onClick={() => startEditBooking(booking)} className="btn-edit">✏️ Ubah Jadwal</button>
+                            <button onClick={() => handleCancelBooking(booking.id)} className="btn-cancel">🗑️ Batalkan</button>
                           </div>
                         )}
                       </>
@@ -659,25 +477,12 @@ function UserDashboard() {
         )}
       </main>
 
-    <div className="dashboard-container"> 
-      <Logout 
-        isOpen={showLogoutModal}
-        onConfirm={confirmLogout}
-        onCancel={cancelLogout}
-        userType="user"
-      />
-    </div>
-
-     {/* FOOTER */}
       <footer className="home-footer">
         <div className="footer-content">
           <div className="footer-section">
             <h3>Motor Service Center</h3>
-            <p>
-              Bengkel modern terpercaya untuk segala kebutuhan perawatan motor Anda.
-            </p>
+            <p>Bengkel modern terpercaya untuk segala kebutuhan perawatan motor Anda.</p>
           </div>
-          
           <div className="footer-section">
             <h3>Layanan</h3>
             <ul>
@@ -687,7 +492,6 @@ function UserDashboard() {
               <li>Perbaikan Mesin</li>
             </ul>
           </div>
-
           <div className="footer-section">
             <h3>Kontak</h3>
             <p>📍 Kp. Pabuaran Manis Jaya No.27 RT.001/RW.001, Jatiuwung, Banten.</p>
@@ -695,13 +499,10 @@ function UserDashboard() {
             <p>📧 support@motorservice.com</p>
           </div>
         </div>
-
         <div className="footer-bottom">
           &copy; {new Date().getFullYear()} Narko Bintang Motor. All rights reserved.
         </div>
       </footer>
-
-
     </div>
   );
 }
