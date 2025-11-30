@@ -17,7 +17,7 @@ function Home() {
       {/* NAVBAR */}
       <nav className="home-navbar">
         <div className="home-logo">
-          🏍️ Motor Service Center
+          Narko Bintang Motor 🏍️
         </div>
         <div className="home-nav-links">
           <a href="#home" onClick={(e) => { e.preventDefault(); scrollToSection('home'); }}>
@@ -56,7 +56,7 @@ function Home() {
         <div className="about-container">
           <h2>Tentang Kami</h2>
           <p>
-            Motor Service Center berdiri sejak tahun 2020 dengan visi memberikan pelayanan 
+            Narko Bintang Motor berdiri sejak tahun 2007 dengan visi memberikan pelayanan 
             perawatan kendaraan roda dua yang modern dan transparan. Kami memiliki mekanik 
             bersertifikat dan peralatan canggih untuk menangani berbagai jenis motor, 
             mulai dari Matic, Bebek, hingga Sport.
@@ -92,14 +92,14 @@ function Home() {
 
           <div className="footer-section">
             <h3>Kontak</h3>
-            <p>📍 Jl. Teknologi No. 123, Jakarta</p>
-            <p>📞 0812-3456-7890</p>
+            <p>📍 Kp. Pabuaran Manis Jaya No.27 RT.001/RW.001, Jatiuwung, Banten.</p>
+            <p>📞 0857-7800-5980</p>
             <p>📧 support@motorservice.com</p>
           </div>
         </div>
 
         <div className="footer-bottom">
-          &copy; {new Date().getFullYear()} Motor Service Center. All rights reserved.
+          &copy; {new Date().getFullYear()} Narko Bintang Motor. All rights reserved.
         </div>
       </footer>
     </div>

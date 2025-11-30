@@ -2,7 +2,7 @@
   "users": [
     {
       "id": "1762622161600",
-      "username": "user001",
+      "username": "Febri sandi",
       "email": "user@example.com",
       "password": "$2b$10$WOlTgdgD.lmnHaKl2xUSZOKZ31.tMk5oymkMTOMPqqZTN2RypagkO",
       "role": "user"
@@ -11,7 +11,7 @@
       "id": "1",
       "username": "admin",
       "email": "admin@example.com",
-      "password": "$2b$10$QD07SZ46IOLk4RGzzyb78eptbF0FpVzZveVF0pc3Chirndf6wGOyi",
+      "password": "$2b$10$ccscLm2/V5lZda5N1ZE3/Orov0YmVlA5lS.jG6qRj65/8N1si9a82",
       "role": "admin"
     }
   ],
@@ -31,6 +31,53 @@
       "status": "completed",
       "createdAt": "2025-11-14T14:26:50.866Z",
       "updatedAt": "2025-11-16T14:48:45.171Z"
+    },
+    {
+      "id": "281125001",
+      "userId": "1762622161600",
+      "nama": "Febri ",
+      "nomorTelepon": "0813455678791",
+      "email": "user12@example.com",
+      "jenisKendaraan": "bebek",
+      "typeKendaraan": "Supra X 125",
+      "noPolisi": "A5657JW",
+      "tanggal": "2025-11-29",
+      "waktu": "14:00",
+      "catatan": "ganti rem",
+      "status": "completed",
+      "createdAt": "2025-11-28T14:51:35.886Z",
+      "updatedAt": "2025-11-28T14:58:14.812Z"
+    },
+    {
+      "id": "281125002",
+      "userId": "1762622161600",
+      "nama": "Febri sandi",
+      "nomorTelepon": "0812958832",
+      "email": "user@example.com",
+      "jenisKendaraan": "sport",
+      "typeKendaraan": "honda stylo 160",
+      "noPolisi": "A5475YQ",
+      "tanggal": "2025-12-06",
+      "waktu": "08:00",
+      "catatan": "",
+      "status": "cancelled",
+      "createdAt": "2025-11-28T14:54:32.173Z",
+      "updatedAt": "2025-11-28T14:58:36.096Z"
+    },
+    {
+      "id": "281125003",
+      "userId": "1762622161600",
+      "nama": "Sandi",
+      "nomorTelepon": "0812958832481",
+      "email": "user22@example.com",
+      "jenisKendaraan": "sport",
+      "typeKendaraan": "Honda Beat",
+      "noPolisi": "A5657JW",
+      "tanggal": "2025-11-29",
+      "waktu": "14:00",
+      "catatan": "ganti oli",
+      "status": "pending",
+      "createdAt": "2025-11-28T15:08:20.738Z"
     }
   ]
 }

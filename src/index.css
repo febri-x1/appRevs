@@ -2,55 +2,57 @@ body {
   margin: 0;
   /* Kita pindahkan semua style lain ke form.css */
 }
-/* src/index.css */
 :root {
-  /* --- Mode Terang (Light) --- */
-  --bg-main: #f4f6f8;
-  --bg-card: #ffffff;
-  --bg-input: #ffffff;
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --border-color: #dddddd;
-  --hover-bg: rgba(0, 123, 255, 0.1);
-  --shadow-color: rgba(0, 0, 0, 0.1);
+  /* --- MODE TERANG (LIGHT) - Modern Soft Look --- */
+  --bg-main: #f4f7fe;       /* Abu-abu kebiruan sangat muda (tidak putih polos) */
+  --bg-card: #ffffff;       /* Putih bersih untuk kartu */
+  --bg-input: #f4f7fe;      /* Sama dengan bg-main untuk input/item list */
   
-  /* Warna Tetap (Brand) */
-  --primary-color: #007bff;
-  --primary-hover: #0056b3;
-  --danger-color: #dc3545;
-  --success-color: #28a745;
+  --text-primary: #2b3674;  /* Navy tua (lebih enak dibaca daripada hitam murni) */
+  --text-secondary: #a3aed0;/* Abu-abu lembut untuk label */
+  
+  --border-color: #e0e5f2;  /* Garis batas sangat halus */
+  --hover-bg: rgba(67, 24, 255, 0.05); /* Efek hover biru transparan */
+  --shadow-color: rgba(112, 144, 176, 0.08); /* Bayangan soft */
+  
+  /* Warna Brand Tetap */
+  --primary-color: #4318ff; /* Biru modern */
+  --primary-hover: #2d0dbe;
+  --danger-color: #ee5d50;
+  --success-color: #01b574;
+  --warning-color: #ffb547;
 }
 
-/* --- Mode Gelap (Dark) - Sesuai style Anda sebelumnya --- */
+/* --- MODE GELAP (DARK) - Tetap Elegan --- */
 [data-theme="dark"] {
-  --bg-main: #1e1e1e;
-  --bg-card: #2d2d2d;
-  --bg-input: #1e1e1e;
-  --text-primary: #f0f0f0;
-  --text-secondary: #aaaaaa;
-  --border-color: #444444;
-  --hover-bg: rgba(0, 123, 255, 0.15);
-  --shadow-color: rgba(0, 0, 0, 0.4);
+  --bg-main: #0b1437;       /* Biru malam sangat gelap */
+  --bg-card: #111c44;       /* Navy gelap untuk kartu */
+  --bg-input: #0b1437;      
+  
+  --text-primary: #ffffff;
+  --text-secondary: #a3aed0;
+  
+  --border-color: #2b3674;
+  --hover-bg: rgba(255, 255, 255, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.3);
 }
 
 body {
   margin: 0;
   background-color: var(--bg-main);
   color: var(--text-primary);
-  transition: background-color 0.3s, color 0.3s; /* Transisi halus */
+  font-family: 'Segoe UI', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Scrollbar Custom */
+/* Scrollbar Modern */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-main);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-color);
+  background: var(--text-secondary);
+  border-radius: 10px;
 }

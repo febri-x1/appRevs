@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import Logout from './Logout';
-import '../style/admin.css';
 import ThemeToggle from './ThemeToggle';
+import ChangePassword from './ChangePassword';
+import '../style/admin.css';
 
 function AdminDashboard() {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' atau 'bookings'
   
   // State untuk data
@@ -262,6 +264,12 @@ function AdminDashboard() {
         onCancel={cancelLogout}
         userType="admin"
       />
+
+      <ChangePassword
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
+     
       
       <BookingDetailModal 
         booking={selectedBooking}
@@ -287,6 +295,14 @@ function AdminDashboard() {
           >
             📋 Kelola Booking
           </button>
+
+          <button
+            className="nav-item"
+            onClick={() => setShowPasswordModal(true)}
+          >
+            🔐 Ganti Password
+          </button>
+          
           <button className="nav-item" onClick={handleLogout}>
             🚪 Logout
           </button>
@@ -295,13 +311,15 @@ function AdminDashboard() {
 
       {/* Main Content */}
       <main className="admin-main">
-        {/* Header */}
         <header className="admin-header">
           <h1>{activeTab === 'dashboard' ? '📊 Dashboard Analytics' : '📋 Kelola Booking'}</h1>
-          <button onClick={fetchData} className="btn-refresh">
+
+          <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+             <button onClick={fetchData} className="btn-refresh">
             🔄 Refresh Data
           </button>
           <ThemeToggle/>
+          </div>
         </header>
 
         {isLoading ? (

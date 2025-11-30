@@ -136,6 +136,43 @@ app.post('/api/login', async (req, res) => {
 });
 
 /**
+ * Ganti Password User (ADMIN & USER)
+ */
+app.post('/api/change-password', verifyToken, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.user.id;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Password saat ini dan password baru wajib diisi' });
+  }
+
+  const db = readDB();
+  const userIndex = db.users.findIndex(u => u.id === userId);
+
+  if (userIndex === -1) {
+    return res.status(404).json({ message: 'User tidak ditemukan' });
+  }
+
+  const user = db.users[userIndex];
+
+  // 1. Verifikasi password lama
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!isMatch) {
+    return res.status(401).json({ message: 'Password saat ini salah' });
+  }
+
+  // 2. Hash password baru
+  const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+  // 3. Simpan ke database
+  db.users[userIndex].password = hashedNewPassword;
+  writeDB(db);
+
+  console.log(`🔐 Password berhasil diubah untuk user: ${user.username}`);
+  res.json({ message: 'Password berhasil diubah' });
+});
+
+/**
  * Buat Booking Baru
  */
 app.post('/api/bookings', verifyToken, async (req, res) => {

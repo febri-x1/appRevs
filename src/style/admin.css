@@ -9,10 +9,10 @@
 /* Sidebar */
 .admin-sidebar {
   width: 260px;
-  background: #2d2d2d;
-  border-right: 2px solid #444;
+  background: var(--border-color);
   display: flex;
   flex-direction: column;
+  transition: background-color 0.3s ease;
 }
 
 .sidebar-header {
@@ -50,17 +50,18 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
+  color: var(--text-secondary)
 }
 
 .nav-item:hover {
   background: rgba(0, 123, 255, 0.1);
-  color: #f0f0f0;
+  color: var(--text-secondary)
 }
 
 .nav-item.active {
-  background: rgba(0, 123, 255, 0.15);
-  border-left-color: #007bff;
-  color: #007bff;
+  background: var(--hover-bg);
+  color: var(--primary-color);
+  border-left-color: var(--primary-color);
 }
 
 /* Main Content */
@@ -116,9 +117,10 @@
 }
 
 .stat-card {
-  background: #2d2d2d;
-  border: 1px solid #444;
-  border-radius: 12px;
+  background: var(--bg-card);
+  border: none;
+  box-shadow: 0 10px 20px var(--shadow-color);
+  border-radius: 16px;
   padding: 1.5rem;
   display: flex;
   align-items: center;
@@ -214,18 +216,19 @@
 }
 
 .recent-item {
-  background: #1e1e1e;
-  border: 1px solid #555;
-  border-radius: 8px;
+  background: var(--bg-input); /* Ini kuncinya! Akan jadi putih abu di Light, gelap di Dark */
+  
+  border: 1px solid var(--border-color);
+  border-radius: 12px; /* Lebih bulat biar modern */
   padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: background-color 0.3s ease;
 }
 
 .recent-info h4 {
-  color: #f0f0f0;
-  margin: 0 0 0.25rem 0;
+  color: var(--text-secondary)
 }
 
 .recent-info p {
@@ -269,9 +272,9 @@
 }
 
 .vehicle-bar {
-  height: 30px;
-  background: #1e1e1e;
-  border-radius: 6px;
+  height: 12px;
+  background: var(--bg-input);
+  border-radius: 20px;
   overflow: hidden;
 }
 
