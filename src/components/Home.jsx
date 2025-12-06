@@ -32,7 +32,7 @@ function Home() {
           
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Link to="/login" className="btn-login-nav">
-            Service Booking
+            Buat Reservasi
           </Link>
           <ThemeToggle/>
         </div>
@@ -49,7 +49,7 @@ function Home() {
             Booking jadwal service Anda sekarang tanpa antre lama.
           </p>
           <Link to="/login" className="cta-button">
-            Booking Service Sekarang ➡️
+            Buat Reservasi Sekarang ➡️
           </Link>
         </div>
       </section>

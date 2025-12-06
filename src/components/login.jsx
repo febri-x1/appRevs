@@ -27,7 +27,7 @@ function Login() {
       }
 
       alert('Login berhasil!');
-      localStorage.setItem('authToken', data.token);
+      sessionStorage.setItem('authToken', data.token);
 
       // Decode token dan redirect berdasarkan role
       const decodedToken = jwtDecode(data.token);

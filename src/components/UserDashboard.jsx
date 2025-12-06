@@ -9,7 +9,7 @@ import ChangePassword from './ChangePassword'; // 1. Import Component
 function UserDashboard() {
   const navigate = useNavigate();
   
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
   let userEmail = '';
   let username = 'User';
   
@@ -67,14 +67,14 @@ function UserDashboard() {
       });
 
       if (!response.ok) {
-        throw new Error('Gagal mengambil data booking');
+        throw new Error('Gagal mengambil data Reservasi');
       }
 
       const data = await response.json();
       setBookings(data.bookings);
     } catch (error) {
-      console.error('Error fetching bookings:', error);
-      alert('❌ Gagal memuat riwayat booking');
+      console.error('Error fetching reservasi:', error);
+      alert('❌ Gagal memuat riwayat reservasi');
     } finally {
       setIsLoadingBookings(false);
     }
@@ -102,10 +102,10 @@ function UserDashboard() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Gagal membuat booking');
+        throw new Error(data.message || 'Gagal membuat reservasi');
       }
 
-      alert('✅ Booking berhasil dibuat! Kami akan menghubungi Anda segera.');
+      alert('✅ Reservasi berhasil dibuat! Kami akan menghubungi Anda segera.');
       
       setFormData({
         nama: username,
@@ -161,20 +161,20 @@ function UserDashboard() {
 
       const data = await response.json();
 
-      if (!response.ok) throw new Error(data.message || 'Gagal update booking');
+      if (!response.ok) throw new Error(data.message || 'Gagal update reservasi');
 
       alert('✅ Jadwal berhasil diubah!');
       setEditingBooking(null);
       fetchBookings();
 
     } catch (error) {
-      console.error('Error updating booking:', error);
+      console.error('Error updating reservasi:', error);
       alert('❌ Gagal mengubah jadwal: ' + error.message);
     }
   };
 
   const handleCancelBooking = async (bookingId) => {
-    if (!confirm('Yakin ingin membatalkan booking ini?')) return;
+    if (!confirm('Yakin ingin membatalkan reservasi ini?')) return;
 
     try {
       const response = await fetch(`http://localhost:3001/api/bookings/${bookingId}/cancel`, {
@@ -184,14 +184,14 @@ function UserDashboard() {
 
       const data = await response.json();
 
-      if (!response.ok) throw new Error(data.message || 'Gagal cancel booking');
+      if (!response.ok) throw new Error(data.message || 'Gagal cancel reservasi');
 
-      alert('✅ Booking berhasil dibatalkan');
+      alert('✅ Reservasi berhasil dibatalkan');
       fetchBookings();
 
     } catch (error) {
-      console.error('Error canceling booking:', error);
-      alert('❌ Gagal membatalkan booking: ' + error.message);
+      console.error('Error canceling reservasi:', error);
+      alert('❌ Gagal membatalkan reservasi: ' + error.message);
     }
   };
 
@@ -267,13 +267,13 @@ function UserDashboard() {
             className={`tab ${activeTab === 'booking' ? 'active' : ''}`}
             onClick={() => setActiveTab('booking')}
           >
-            📝 Booking Baru
+            📝 Reservasi Baru
           </button>
           <button 
             className={`tab ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => setActiveTab('history')}
           >
-            📋 Riwayat Booking
+            📋 Riwayat reservasi
           </button>
         </div>
       </div>
@@ -283,7 +283,7 @@ function UserDashboard() {
           <>
             <div className="booking-card">
               <div className="card-header">
-                <h2>📋 Form Booking Service Motor</h2>
+                <h2>📋 Form Reservasi Service Motor</h2>
                 <p>Isi formulir di bawah ini untuk reservasi service</p>
               </div>
 
@@ -358,7 +358,7 @@ function UserDashboard() {
 
                 <div className="form-actions">
                   <button type="submit" className="btn-submit" disabled={isSubmitting}>
-                    {isSubmitting ? '⏳ Memproses...' : '✅ Buat Booking'}
+                    {isSubmitting ? '⏳ Memproses...' : '✅ Buat Reservasi'}
                   </button>
                 </div>
               </form>
@@ -377,7 +377,7 @@ function UserDashboard() {
         ) : (
           <div className="history-container">
             <div className="history-header">
-              <h2>📋 Riwayat Booking Service</h2>
+              <h2>📋 Riwayat Reservasi Service</h2>
               <button onClick={fetchBookings} className="btn-refresh">🔄 Refresh</button>
             </div>
 
@@ -385,8 +385,8 @@ function UserDashboard() {
               <div className="loading">⏳ Memuat data...</div>
             ) : bookings.length === 0 ? (
               <div className="empty-state">
-                <p>📭 Belum ada riwayat booking</p>
-                <button onClick={() => setActiveTab('booking')} className="btn-primary">Buat Booking Sekarang</button>
+                <p>📭 Belum ada riwayat reservasi</p>
+                <button onClick={() => setActiveTab('booking')} className="btn-primary">Buat Reservasi Sekarang</button>
               </div>
             ) : (
               <div className="bookings-list">
@@ -452,6 +452,10 @@ function UserDashboard() {
                           <div className="detail-item">
                             <span className="label">📱 Telepon:</span>
                             <span className="value">{booking.nomorTelepon}</span>
+                          </div>
+                          <div className='detail-item'>
+                            <span className="label">Biaya:</span>
+                            <span className="value">{booking.biaya}</span>
                           </div>
                           {booking.catatan && (
                             <div className="detail-item full">

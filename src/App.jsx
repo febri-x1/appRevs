@@ -24,7 +24,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
 
         {/* Rute Dilindungi untuk User */}
-        <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
+        <Route element={<ProtectedRoute allowedRoles={['user']} />}>
           <Route path="/dashboard" element={<UserDashboard />} /> 
         </Route>
 

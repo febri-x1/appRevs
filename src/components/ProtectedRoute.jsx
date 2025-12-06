@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 
 // Fungsi helper untuk mendapatkan role dari token
 const getUserRole = () => {
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
   if (!token) return null;
 
   try {
@@ -12,7 +12,7 @@ const getUserRole = () => {
     return decoded.role; // Mengambil 'role' dari payload token
   } catch (error) {
     console.error("Token tidak valid:", error);
-    localStorage.removeItem('authToken'); // Hapus token rusak
+    sessionStorage.removeItem('authToken'); // Hapus token rusak
     return null;
   }
 };
